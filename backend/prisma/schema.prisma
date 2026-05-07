@@ -1,0 +1,249 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  STAFF
+  ADMIN
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+enum NotificationTarget {
+  ALL
+  STAFF
+  STUDENTS
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  role      Role     @default(STUDENT)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studentProfile    StudentProfile?
+  staffProfile      StaffProfile?
+  userNotifications UserNotification[]
+
+  @@map("users")
+}
+
+model StudentProfile {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  firstName     String
+  lastName      String
+  dateOfBirth   DateTime?
+  guardianName  String?
+  guardianPhone String?
+  address       String?
+  avatar        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attendances     Attendance[]
+  quizSubmissions QuizSubmission[]
+  classStudents   ClassStudent[]
+
+  @@map("student_profiles")
+}
+
+model StaffProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  firstName   String
+  lastName    String
+  designation String?
+  phone       String?
+  address     String?
+  avatar      String?
+  salary      Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  staffAttendances StaffAttendance[]
+  salaries        Salary[]
+  classes         Class[]
+  subjects        Subject[]
+  quizzes         Quiz[]
+
+  @@map("staff_profiles")
+}
+
+model Class {
+  id        String   @id @default(uuid())
+  name      String
+  grade     String
+  section   String?
+  staffId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  staff       StaffProfile   @relation(fields: [staffId], references: [id])
+  classStudents ClassStudent[]
+  subjects    Subject[]
+  attendances Attendance[]
+
+  @@map("classes")
+}
+
+model ClassStudent {
+  id        String   @id @default(uuid())
+  classId   String
+  studentId String
+  joinedAt  DateTime @default(now())
+
+  class   Class          @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, studentId])
+  @@map("class_students")
+}
+
+model Subject {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  classId     String
+  staffId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  class   Class        @relation(fields: [classId], references: [id])
+  staff   StaffProfile @relation(fields: [staffId], references: [id])
+  quizzes Quiz[]
+
+  @@map("subjects")
+}
+
+model Attendance {
+  id        String           @id @default(uuid())
+  studentId String
+  classId   String
+  date      DateTime         @db.Date
+  status    AttendanceStatus
+  notes     String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  student StudentProfile @relation(fields: [studentId], references: [id])
+  class   Class          @relation(fields: [classId], references: [id])
+
+  @@unique([studentId, classId, date])
+  @@map("attendances")
+}
+
+model StaffAttendance {
+  id         String           @id @default(uuid())
+  staffId    String
+  date       DateTime         @db.Date
+  status     AttendanceStatus
+  checkIn    DateTime?
+  checkOut   DateTime?
+  notes      String?
+  markedById String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  staff StaffProfile @relation(fields: [staffId], references: [id])
+
+  @@unique([staffId, date])
+  @@map("staff_attendances")
+}
+
+model Quiz {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  subjectId   String
+  staffId     String
+  questions   Json
+  timeLimit   Int?
+  dueDate     DateTime?
+  isPublished Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  subject     Subject        @relation(fields: [subjectId], references: [id])
+  staff       StaffProfile   @relation(fields: [staffId], references: [id])
+  submissions QuizSubmission[]
+
+  @@map("quizzes")
+}
+
+model QuizSubmission {
+  id          String   @id @default(uuid())
+  quizId      String
+  studentId   String
+  answers     Json
+  score       Float?
+  submittedAt DateTime @default(now())
+
+  quiz    Quiz           @relation(fields: [quizId], references: [id])
+  student StudentProfile @relation(fields: [studentId], references: [id])
+
+  @@unique([quizId, studentId])
+  @@map("quiz_submissions")
+}
+
+model Salary {
+  id         String    @id @default(uuid())
+  staffId    String
+  month      Int
+  year       Int
+  baseSalary Float
+  deductions Float     @default(0)
+  bonus      Float     @default(0)
+  netSalary  Float
+  reason     String?
+  paidAt     DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  staff StaffProfile @relation(fields: [staffId], references: [id])
+
+  @@unique([staffId, month, year])
+  @@map("salaries")
+}
+
+model Notification {
+  id          String             @id @default(uuid())
+  title       String
+  message     String
+  target      NotificationTarget
+  createdById String?
+  createdAt   DateTime           @default(now())
+
+  userNotifications UserNotification[]
+
+  @@map("notifications")
+}
+
+model UserNotification {
+  id             String    @id @default(uuid())
+  userId         String
+  notificationId String
+  isRead         Boolean   @default(false)
+  readAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, notificationId])
+  @@map("user_notifications")
+}
