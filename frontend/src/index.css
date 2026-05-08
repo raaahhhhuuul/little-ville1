@@ -3,59 +3,83 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
+
   body {
-    @apply font-sans antialiased bg-gray-50 text-gray-900;
+    @apply font-sans antialiased text-gray-800;
+    background-color: #FFFBEB;
+    background-image: radial-gradient(circle, rgba(251,191,36,0.13) 1.5px, transparent 1.5px);
+    background-size: 28px 28px;
   }
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    @apply bg-gray-100;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded-full;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-400;
-  }
+
+  h1, h2, h3 { @apply font-bold; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #FFF7ED; }
+  ::-webkit-scrollbar-thumb { @apply bg-orange-200 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-orange-300; }
 }
 
 @layer components {
+  /* ── Buttons ─────────────────────────────────────────── */
   .btn-primary {
-    @apply bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-orange-500 text-white px-5 py-2.5 rounded-2xl font-bold
+           hover:bg-orange-600 active:scale-95
+           focus:outline-none focus:ring-4 focus:ring-orange-300
+           transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed
+           shadow-md shadow-orange-200;
   }
   .btn-secondary {
-    @apply bg-white text-gray-700 px-4 py-2 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors;
+    @apply bg-white text-violet-700 px-5 py-2.5 rounded-2xl font-bold
+           border-2 border-violet-200
+           hover:bg-violet-50 active:scale-95
+           focus:outline-none focus:ring-4 focus:ring-violet-200
+           transition-all duration-150 shadow-sm;
   }
   .btn-danger {
-    @apply bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors;
+    @apply bg-rose-500 text-white px-5 py-2.5 rounded-2xl font-bold
+           hover:bg-rose-600 active:scale-95
+           focus:outline-none focus:ring-4 focus:ring-rose-300
+           transition-all duration-150 shadow-md shadow-rose-200;
   }
+
+  /* ── Card ────────────────────────────────────────────── */
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+    @apply bg-white rounded-3xl p-6
+           border-2 border-orange-100
+           shadow-[0_2px_20px_-4px_rgba(249,115,22,0.10)];
   }
+
+  /* ── Form ────────────────────────────────────────────── */
   .input-field {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors;
+    @apply w-full px-4 py-2.5 rounded-2xl text-sm font-medium
+           border-2 border-orange-200 bg-orange-50/40
+           focus:outline-none focus:ring-4 focus:ring-orange-200 focus:border-orange-400
+           transition-all placeholder:text-gray-400;
   }
   .label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+    @apply block text-sm font-bold text-violet-700 mb-1.5;
   }
+
+  /* ── Badges ──────────────────────────────────────────── */
   .badge-green {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800;
+    @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold
+           bg-emerald-100 text-emerald-700 border border-emerald-200;
   }
   .badge-red {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800;
+    @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold
+           bg-rose-100 text-rose-700 border border-rose-200;
   }
   .badge-yellow {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800;
+    @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold
+           bg-amber-100 text-amber-700 border border-amber-200;
   }
   .badge-blue {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800;
+    @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold
+           bg-sky-100 text-sky-700 border border-sky-200;
   }
   .badge-purple {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800;
+    @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold
+           bg-violet-100 text-violet-700 border border-violet-200;
   }
 }

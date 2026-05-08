@@ -153,7 +153,7 @@ In your Supabase project dashboard:
 2. Copy:
    - `Project URL` → this is your `SUPABASE_URL`
    - `anon / public` key → this is your `VITE_SUPABASE_ANON_KEY`
-   - `service_role` key → this is your `SUPABASE_SERVICE_ROLE_KEY` (**keep this secret!**)
+   - `service_role` key → this is your ` ` (**keep this secret!**)
 
 ### Step 3 — Get Database URL
 

@@ -3,16 +3,33 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { login } from '../../api/auth'
 import toast from 'react-hot-toast'
-import { GraduationCap, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 
 const redirectMap = { ADMIN: '/admin', STAFF: '/staff', STUDENT: '/student' }
 
+const demoAccounts = [
+  { role: 'Admin',   email: 'admin@kindercare.com',   emoji: '👑', gradient: 'from-violet-500 to-purple-600', bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-700' },
+  { role: 'Staff',   email: 'staff@kindercare.com',   emoji: '🍎', gradient: 'from-orange-400 to-rose-500',   bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700' },
+  { role: 'Student', email: 'student@kindercare.com', emoji: '🎒', gradient: 'from-sky-400 to-blue-500',      bg: 'bg-sky-50',    border: 'border-sky-200',    text: 'text-sky-700'    }
+]
+
+const floaters = [
+  { emoji: '⭐', pos: 'top-8 left-8',      dur: '3.5s', delay: '0s',    size: 'text-4xl' },
+  { emoji: '🌈', pos: 'top-6 right-10',    dur: '4.5s', delay: '0.8s',  size: 'text-5xl' },
+  { emoji: '🎨', pos: 'top-1/3 left-4',    dur: '4s',   delay: '0.3s',  size: 'text-3xl' },
+  { emoji: '📚', pos: 'top-2/3 right-6',   dur: '3.8s', delay: '1.1s',  size: 'text-3xl' },
+  { emoji: '✏️', pos: 'bottom-24 left-10', dur: '5s',   delay: '0.5s',  size: 'text-3xl' },
+  { emoji: '🌟', pos: 'bottom-16 right-8', dur: '3.2s', delay: '1.5s',  size: 'text-4xl' },
+  { emoji: '🎒', pos: 'top-1/2 right-4',   dur: '4.2s', delay: '0.2s',  size: 'text-2xl' },
+  { emoji: '🎯', pos: 'bottom-32 left-20', dur: '3.7s', delay: '0.9s',  size: 'text-2xl' },
+]
+
 const Login = () => {
-  const { user } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const { user }    = useAuth()
+  const navigate    = useNavigate()
+  const location    = useLocation()
   const [form, setForm] = useState({ email: '', password: '' })
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
 
   if (user) {
@@ -21,18 +38,13 @@ const Login = () => {
     return null
   }
 
-  const handleChange = (e) => setForm(p => ({ ...p, [e.target.name]: e.target.value }))
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!form.email || !form.password) {
-      toast.error('Please fill in all fields')
-      return
-    }
+    if (!form.email || !form.password) { toast.error('Please fill in all fields'); return }
     setLoading(true)
     try {
       const { user: u } = await login(form.email, form.password)
-      toast.success(`Welcome back!`)
+      toast.success('Welcome back! 🎉')
       navigate(redirectMap[u.role] || '/', { replace: true })
     } catch (err) {
       toast.error(err.message || 'Invalid credentials')
@@ -42,19 +54,44 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-indigo-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-2xl mb-4 shadow-lg shadow-primary-200">
-            <GraduationCap size={32} className="text-white" />
+    <div
+      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+      style={{ background: 'linear-gradient(135deg, #FFFBEB 0%, #FFF0F6 50%, #EEF2FF 100%)' }}
+    >
+      {/* Animated background blobs */}
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full opacity-20 animate-blob pointer-events-none"
+           style={{ background: 'radial-gradient(circle, #FCD34D, transparent 65%)', animationDelay: '0s' }} />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full opacity-15 animate-blob pointer-events-none"
+           style={{ background: 'radial-gradient(circle, #C084FC, transparent 65%)', animationDelay: '3s' }} />
+      <div className="absolute top-1/2 left-1/4 w-[400px] h-[400px] rounded-full opacity-15 animate-blob pointer-events-none"
+           style={{ background: 'radial-gradient(circle, #60A5FA, transparent 65%)', animationDelay: '1.5s' }} />
+
+      {/* Floating decorations */}
+      {floaters.map(({ emoji, pos, dur, delay, size }) => (
+        <div
+          key={emoji + pos}
+          className={`absolute ${pos} ${size} select-none pointer-events-none opacity-50`}
+          style={{ animation: `float ${dur} ease-in-out infinite`, animationDelay: delay }}
+        >
+          {emoji}
+        </div>
+      ))}
+
+      {/* Login card */}
+      <div className="w-full max-w-md z-10 animate-pop">
+        {/* Logo */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-3xl mb-4 shadow-xl shadow-violet-200/50 border-2 border-violet-100">
+            <span className="text-5xl">🏫</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">KinderCare</h1>
-          <p className="text-gray-500 mt-1">Management System</p>
+          <h1 className="font-display text-5xl text-violet-700">Little Ville</h1>
+          <p className="text-orange-500 font-bold text-sm mt-1 tracking-wide uppercase">Kindergarten Management</p>
         </div>
 
-        <div className="card shadow-xl border-0">
-          <h2 className="text-xl font-semibold text-gray-900 mb-1">Sign in to your account</h2>
-          <p className="text-sm text-gray-500 mb-6">Enter your credentials to continue</p>
+        {/* Card */}
+        <div className="bg-white/85 backdrop-blur-md rounded-4xl p-8 shadow-2xl shadow-violet-200/30 border-2 border-white">
+          <h2 className="text-xl font-bold text-violet-800 mb-1">Welcome back! 👋</h2>
+          <p className="text-sm text-gray-500 font-medium mb-6">Sign in to your account to continue</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -63,9 +100,9 @@ const Login = () => {
                 type="email"
                 name="email"
                 value={form.email}
-                onChange={handleChange}
+                onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
                 className="input-field"
-                placeholder="you@kindercare.com"
+                placeholder="you@littleville.com"
                 required
                 autoComplete="email"
               />
@@ -75,21 +112,21 @@ const Login = () => {
               <label className="label">Password</label>
               <div className="relative">
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPw ? 'text' : 'password'}
                   name="password"
                   value={form.password}
-                  onChange={handleChange}
-                  className="input-field pr-10"
+                  onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
+                  className="input-field pr-11"
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(p => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowPw(p => !p)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-500 transition-colors"
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
             </div>
@@ -97,40 +134,38 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full flex items-center justify-center gap-2 mt-2"
+              className="btn-primary w-full flex items-center justify-center gap-2 mt-2 py-3 text-base"
             >
-              {loading ? <><Loader2 size={16} className="animate-spin" /> Signing in...</> : 'Sign In'}
+              {loading
+                ? <><Loader2 size={18} className="animate-spin" /> Signing in...</>
+                : '🚀 Sign In'}
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-gray-100">
-            <p className="text-xs text-gray-400 text-center mb-3">Demo Credentials</p>
-            <div className="grid grid-cols-3 gap-2 text-xs">
-              {[
-                { role: 'Admin', email: 'admin@kindercare.com', color: 'purple' },
-                { role: 'Staff', email: 'staff@kindercare.com', color: 'blue' },
-                { role: 'Student', email: 'student@kindercare.com', color: 'green' }
-              ].map(({ role, email, color }) => (
+          {/* Demo credentials */}
+          <div className="mt-6 pt-5 border-t-2 border-amber-100">
+            <p className="text-xs font-bold text-gray-400 text-center mb-3 uppercase tracking-wide">
+              Quick Demo Access
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {demoAccounts.map(({ role, email, emoji, bg, border, text }) => (
                 <button
                   key={role}
                   type="button"
                   onClick={() => setForm({ email, password: `${role}@1234` })}
-                  className={`p-2 rounded-lg border text-center transition-colors ${
-                    color === 'purple' ? 'border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100' :
-                    color === 'blue' ? 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100' :
-                    'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
-                  }`}
+                  className={`${bg} ${border} border-2 ${text} p-3 rounded-2xl text-center transition-all hover:scale-105 active:scale-95`}
                 >
-                  <div className="font-medium">{role}</div>
-                  <div className="text-xs opacity-70 truncate">{role}@1234</div>
+                  <div className="text-2xl mb-1">{emoji}</div>
+                  <div className="text-xs font-bold">{role}</div>
+                  <div className="text-xs opacity-60">{role}@1234</div>
                 </button>
               ))}
             </div>
           </div>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
-          KinderCare Management System v1.0
+        <p className="text-center text-xs text-gray-400 font-medium mt-5">
+          Little Ville Management System v1.0 🌟
         </p>
       </div>
     </div>

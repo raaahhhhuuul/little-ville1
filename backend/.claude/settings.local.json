@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Test-NetConnection *)",
+      "PowerShell(cd C:\\\\Users\\\\CICT\\\\Desktop\\\\lv\\\\backend; $env:DATABASE_URL=\"postgresql://postgres:littleville12123@db.yhytzuozfoftesjvgiyi.supabase.co:5432/postgres?sslmode=require\"; npx prisma db pull 2>&1 | Select-Object -First 20)",
+      "PowerShell(Resolve-DnsName *)",
+      "PowerShell(Start-Sleep -Seconds 2; Invoke-RestMethod -Uri \"http://localhost:5000/api/auth/login\" -Method POST -ContentType \"application/json\" -Body '{\"email\":\"admin@kindercare.com\",\"password\":\"Admin@1234\"}' | ConvertTo-Json -Depth 5)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\CICT\\\\Desktop\\\\lv\\\\frontend\" -Recurse -File)",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)"
+    ]
+  }
+}
