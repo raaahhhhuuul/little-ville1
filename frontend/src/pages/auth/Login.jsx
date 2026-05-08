@@ -25,9 +25,9 @@ const floaters = [
 ]
 
 const Login = () => {
-  const { user }    = useAuth()
-  const navigate    = useNavigate()
-  const location    = useLocation()
+  const { user, setUser } = useAuth()
+  const navigate          = useNavigate()
+  const location          = useLocation()
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -44,6 +44,7 @@ const Login = () => {
     setLoading(true)
     try {
       const { user: u } = await login(form.email, form.password)
+      setUser(u)
       toast.success('Welcome back! 🎉')
       navigate(redirectMap[u.role] || '/', { replace: true })
     } catch (err) {
