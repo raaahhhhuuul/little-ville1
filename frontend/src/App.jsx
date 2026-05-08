@@ -17,6 +17,7 @@ import StaffAttendance from './pages/staff/Attendance'
 import StaffClasses from './pages/staff/Classes'
 import StaffQuizzes from './pages/staff/Quizzes'
 import StaffNotifications from './pages/staff/Notifications'
+import StaffProfile from './pages/staff/Profile'
 
 import StudentDashboard from './pages/student/Dashboard'
 import StudentAttendance from './pages/student/Attendance'
@@ -66,6 +67,9 @@ const App = () => (
       } />
       <Route path="/staff/notifications" element={
         <ProtectedRoute><RoleRoute roles={['STAFF']}><StaffNotifications /></RoleRoute></ProtectedRoute>
+      } />
+      <Route path="/staff/profile" element={
+        <ProtectedRoute><RoleRoute roles={['STAFF']}><StaffProfile /></RoleRoute></ProtectedRoute>
       } />
 
       {/* Student Routes */}

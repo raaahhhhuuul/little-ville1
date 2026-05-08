@@ -115,6 +115,17 @@ const getQuizSubmissions = async (quizId, staffId) => {
   })
 }
 
+const getStaffProfile = async (userId) => {
+  return prisma.staffProfile.findUnique({ where: { userId } })
+}
+
+const updateStaffProfile = async (userId, { firstName, lastName, designation, phone, address }) => {
+  return prisma.staffProfile.update({
+    where: { userId },
+    data: { firstName, lastName, designation, phone, address }
+  })
+}
+
 const getStaffNotifications = async (userId) => {
   return prisma.userNotification.findMany({
     where: { userId },
@@ -131,6 +142,8 @@ const markNotificationRead = async (userId, notificationId) => {
 }
 
 module.exports = {
+  getStaffProfile,
+  updateStaffProfile,
   getAssignedClasses,
   createClass,
   updateClass,

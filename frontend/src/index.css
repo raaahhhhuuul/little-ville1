@@ -82,4 +82,8 @@
     @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold
            bg-violet-100 text-violet-700 border border-violet-200;
   }
+  .badge-orange {
+    @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold
+           bg-orange-100 text-orange-700 border border-orange-200;
+  }
 }

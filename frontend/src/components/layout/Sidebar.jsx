@@ -17,11 +17,12 @@ const adminNav = [
 ]
 
 const staffNav = [
-  { to: '/staff',               icon: LayoutDashboard, label: 'Dashboard',  end: true },
-  { to: '/staff/classes',       icon: School,          label: 'Classes'               },
-  { to: '/staff/attendance',    icon: ClipboardList,   label: 'Attendance'            },
-  { to: '/staff/quizzes',       icon: BookOpen,        label: 'Quizzes'               },
-  { to: '/staff/notifications', icon: Bell,            label: 'Notifications'         }
+  { to: '/staff',               icon: LayoutDashboard, label: 'Dashboard',    end: true },
+  { to: '/staff/classes',       icon: School,          label: 'Classes'                 },
+  { to: '/staff/attendance',    icon: ClipboardList,   label: 'Attendance'              },
+  { to: '/staff/quizzes',       icon: BookOpen,        label: 'Quizzes'                 },
+  { to: '/staff/notifications', icon: Bell,            label: 'Notifications'           },
+  { to: '/staff/profile',       icon: User,            label: 'Profile'                 }
 ]
 
 const studentNav = [
@@ -41,13 +42,14 @@ const roleMeta = {
 }
 
 const Sidebar = ({ mobileOpen, onClose }) => {
-  const { user } = useAuth()
+  const { user, setUser } = useAuth()
   const navigate  = useNavigate()
   const nav       = navMap[user?.role] || []
   const meta      = roleMeta[user?.role] || {}
 
   const handleLogout = async () => {
     await logout()
+    setUser(null)
     toast.success('See you next time! 👋')
     navigate('/login')
   }

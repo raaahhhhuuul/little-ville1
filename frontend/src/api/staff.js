@@ -1,5 +1,8 @@
 import api from './axios'
 
+export const getStaffProfile = () => api.get('/staff/profile')
+export const updateStaffProfile = (data) => api.patch('/staff/profile', data)
+
 export const getClasses = () => api.get('/staff/classes')
 export const createClass = (data) => api.post('/staff/classes', data)
 export const updateClass = (id, data) => api.patch(`/staff/classes/${id}`, data)

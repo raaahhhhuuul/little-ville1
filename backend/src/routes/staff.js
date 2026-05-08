@@ -7,6 +7,9 @@ const ctrl = require('../controllers/staffController')
 
 router.use(authenticate, authorize('STAFF', 'ADMIN'))
 
+router.get('/profile', ctrl.getProfile)
+router.patch('/profile', ctrl.updateProfile)
+
 router.get('/classes', ctrl.getClasses)
 router.post('/classes',
   [body('name').trim().notEmpty(), body('grade').trim().notEmpty()],
