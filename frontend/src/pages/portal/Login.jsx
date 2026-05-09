@@ -10,11 +10,6 @@ const portalRedirectMap = {
   ADMIN: '/portal/admin/dashboard'
 }
 
-const demoAccounts = [
-  { role: 'Admin', email: 'admin@kindercare.com', password: 'Admin@1234',  desc: 'Full system access' },
-  { role: 'Staff', email: 'staff@kindercare.com', password: 'Staff@1234',  desc: 'Classes & attendance' }
-]
-
 const PortalLogin = () => {
   const { user, setUser } = useAuth()
   const navigate          = useNavigate()
@@ -154,23 +149,6 @@ const PortalLogin = () => {
             </button>
           </form>
 
-          {/* Demo accounts */}
-          <div className="mt-5 pt-5 border-t border-[#2A2D3A]">
-            <p className="text-[10px] font-medium text-gray-600 uppercase tracking-widest mb-3">Demo Access</p>
-            <div className="grid grid-cols-2 gap-2">
-              {demoAccounts.map(({ role, email, password, desc }) => (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => { setForm({ email, password }); setError('') }}
-                  className="p-3 text-left bg-[#0F1117] border border-[#2A2D3A] hover:border-violet-500/50 hover:bg-violet-950/20 transition-colors"
-                >
-                  <p className="text-xs font-medium text-gray-300">{role}</p>
-                  <p className="text-[10px] text-gray-600 mt-0.5">{desc}</p>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         <p className="text-center text-[10px] text-gray-700 mt-5">Little Ville Management System · Staff Portal v1.0</p>

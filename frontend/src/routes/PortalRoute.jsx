@@ -6,6 +6,9 @@ const PortalRoute = ({ children }) => {
   if (loading) return null
   if (!user) return <Navigate to="/portal/login" replace />
   if (user.role === 'STUDENT') return <Navigate to="/login" replace />
+  if (user.role === 'STAFF' && !user.staffProfile?.phone) {
+    return <Navigate to="/portal/complete-profile" replace />
+  }
   return children
 }
 

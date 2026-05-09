@@ -171,27 +171,7 @@ const StudentLogin = () => {
             </button>
           </form>
 
-          {/* Demo */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Quick Demo</p>
-            <button
-              type="button"
-              onClick={() => { setForm({ email: 'student@kindercare.com', password: 'Student@1234' }); setError('') }}
-              className="w-full p-4 bg-white border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50 transition-colors text-left rounded-2xl"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
-                  <IconGraduation size={15} className="text-orange-500" strokeWidth={2} />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-800">Student Demo</p>
-                  <p className="text-xs text-gray-400 mt-0.5">student@kindercare.com · Student@1234</p>
-                </div>
-              </div>
-            </button>
-          </div>
-
-          <p className="text-center text-xs text-gray-400 mt-6">Little Ville v1.0</p>
+          <p className="text-center text-xs text-gray-400 mt-8">Little Ville v1.0</p>
         </div>
       </div>
     </div>

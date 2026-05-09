@@ -12,7 +12,9 @@
       "PowerShell(Test-NetConnection *)",
       "PowerShell(Invoke-RestMethod -Uri \"http://localhost:5000/api/auth/classes\" -Method Get | ConvertTo-Json)",
       "PowerShell(Start-Sleep -Seconds 5; Invoke-RestMethod -Uri \"http://localhost:5000/api/auth/classes\" -Method Get | ConvertTo-Json)",
-      "PowerShell(Receive-Job *)"
+      "PowerShell(Receive-Job *)",
+      "PowerShell(Stop-Job *)",
+      "PowerShell(Start-Process powershell -ArgumentList \"-NoExit\", \"-Command\", \"cd 'C:\\\\Users\\\\CICT\\\\Desktop\\\\lv\\\\backend'; npm run dev\")"
     ]
   }
 }

@@ -6,6 +6,7 @@ const StudentRoute = ({ children }) => {
   if (loading) return null
   if (!user) return <Navigate to="/login" replace />
   if (user.role !== 'STUDENT') return <Navigate to="/portal/login" replace />
+  if (!user.studentProfile?.guardianPhone) return <Navigate to="/complete-profile" replace />
   return children
 }
 

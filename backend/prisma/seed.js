@@ -8,7 +8,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// Idempotent — if user already exists in Supabase, return the existing record
 async function getOrCreateSupabaseUser(email, password, role) {
   const { data, error } = await supabase.auth.admin.createUser({
     email,
@@ -16,45 +15,39 @@ async function getOrCreateSupabaseUser(email, password, role) {
     email_confirm: true,
     user_metadata: { role }
   })
-
   if (!error) return data.user
 
-  // User already registered — fetch from Supabase
   if (error.message?.toLowerCase().includes('already')) {
     const { data: listData } = await supabase.auth.admin.listUsers({ perPage: 1000 })
     const existing = listData?.users?.find(u => u.email === email)
     if (existing) return existing
   }
-
-  throw new Error(`Supabase user error for ${email}: ${error.message}`)
+  throw new Error(`Supabase error for ${email}: ${error.message}`)
 }
 
 const GRADE_LEVELS = [
-  { name: 'Nursery', grade: 'Nursery' },
-  { name: 'LKG',     grade: 'LKG'     },
-  { name: 'UKG',     grade: 'UKG'     },
-  { name: 'Grade 1', grade: 'Grade 1' },
-  { name: 'Grade 2', grade: 'Grade 2' },
+  { name: 'Play Group', grade: 'Play Group' },
+  { name: 'Nursery',    grade: 'Nursery'    },
+  { name: 'Junior KG',  grade: 'Junior KG'  },
+  { name: 'Senior KG',  grade: 'Senior KG'  },
 ]
 
 async function main() {
   console.log('Starting seed...')
 
-  // ── Default grade-level classes (no staff assigned) ──────────────────────
-  console.log('\nSeeding grade-level classes...')
+  // ── Grade-level classes ─────────────────────────────────────────────────────
+  // Delete old unassigned classes (cascade removes any ClassStudent links)
+  console.log('\nResetting grade-level classes...')
+  await prisma.class.deleteMany({ where: { staffId: null } })
+
   const classMap = {}
   for (const { name, grade } of GRADE_LEVELS) {
-    let cls = await prisma.class.findFirst({ where: { name } })
-    if (!cls) {
-      cls = await prisma.class.create({ data: { name, grade } })
-      console.log(`  Created: ${name}`)
-    } else {
-      console.log(`  Exists:  ${name}`)
-    }
+    const cls = await prisma.class.create({ data: { name, grade } })
     classMap[name] = cls
+    console.log(`  Created: ${name}`)
   }
 
-  // ── Admin ─────────────────────────────────────────────────────────────────
+  // ── Admin ───────────────────────────────────────────────────────────────────
   console.log('\nSeeding admin...')
   const adminAuth = await getOrCreateSupabaseUser('admin@kindercare.com', 'Admin@1234', 'ADMIN')
   await prisma.user.upsert({
@@ -63,7 +56,7 @@ async function main() {
     create: { id: adminAuth.id, email: 'admin@kindercare.com', role: 'ADMIN' }
   })
 
-  // ── Staff ─────────────────────────────────────────────────────────────────
+  // ── Staff ───────────────────────────────────────────────────────────────────
   console.log('Seeding staff...')
   const staffAuth = await getOrCreateSupabaseUser('staff@kindercare.com', 'Staff@1234', 'STAFF')
   const staffUser = await prisma.user.upsert({
@@ -84,7 +77,7 @@ async function main() {
     }
   })
 
-  // ── Student ───────────────────────────────────────────────────────────────
+  // ── Student ─────────────────────────────────────────────────────────────────
   console.log('Seeding student...')
   const studentAuth = await getOrCreateSupabaseUser('student@kindercare.com', 'Student@1234', 'STUDENT')
   const studentUser = await prisma.user.upsert({
@@ -96,30 +89,26 @@ async function main() {
     where:  { userId: studentUser.id },
     update: {},
     create: {
-      userId:       studentUser.id,
-      firstName:    'Emma',
-      lastName:     'Thompson',
-      guardianName: 'Robert Thompson',
+      userId:        studentUser.id,
+      firstName:     'Emma',
+      lastName:      'Thompson',
+      guardianName:  'Robert Thompson',
       guardianPhone: '+1-555-0103',
-      parentEmail:  'student@kindercare.com'
+      parentEmail:   'student@kindercare.com'
     }
   })
 
-  // Link demo student to LKG
-  if (classMap['LKG']) {
+  // Link demo student to Nursery
+  if (classMap['Nursery']) {
     await prisma.classStudent.upsert({
-      where:  { classId_studentId: { classId: classMap['LKG'].id, studentId: studentProfile.id } },
+      where:  { classId_studentId: { classId: classMap['Nursery'].id, studentId: studentProfile.id } },
       update: {},
-      create: { classId: classMap['LKG'].id, studentId: studentProfile.id }
+      create: { classId: classMap['Nursery'].id, studentId: studentProfile.id }
     })
-    console.log('  Linked Emma Thompson → LKG')
+    console.log('  Linked Emma Thompson → Nursery')
   }
 
   console.log('\nSeed completed successfully.')
-  console.log('\nDemo credentials:')
-  console.log('  Admin:   admin@kindercare.com   / Admin@1234')
-  console.log('  Staff:   staff@kindercare.com   / Staff@1234')
-  console.log('  Student: student@kindercare.com / Student@1234')
 }
 
 main()
