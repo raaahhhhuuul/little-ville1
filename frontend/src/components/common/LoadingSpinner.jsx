@@ -23,7 +23,7 @@ const blades = [
 ]
 
 export const Pinwheel = ({ size = 80 }) => (
-  <svg width={size} height={size} viewBox="0 0 100 100" fill="none">
+  <svg width={size} height={size} viewBox="-8 -8 116 116" fill="none">
     {blades.map(({ angle, color }) => (
       <ellipse
         key={angle}

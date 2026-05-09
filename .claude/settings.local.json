@@ -4,7 +4,8 @@
       "Bash(npm --version)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5000/api/auth/me)",
       "PowerShell(Start-Process powershell -ArgumentList \"-NoExit\", \"-Command\", \"cd 'C:\\\\Users\\\\CICT\\\\Desktop\\\\lv\\\\backend'; npm run dev\" -WindowStyle Normal)",
-      "PowerShell(Start-Sleep -Seconds 4; try { $r = Invoke-WebRequest -Uri \"http://localhost:5000/api/auth/me\" -Method GET -ErrorAction Stop; \"Server responded: $\\($r.StatusCode\\)\" } catch { if \\($_.Exception.Response\\) { \"Server is UP \\(got $\\($_.Exception.Response.StatusCode.value__\\) — expected without token\\)\" } else { \"Server NOT running: $\\($_.Exception.Message\\)\" } })"
+      "PowerShell(Start-Sleep -Seconds 4; try { $r = Invoke-WebRequest -Uri \"http://localhost:5000/api/auth/me\" -Method GET -ErrorAction Stop; \"Server responded: $\\($r.StatusCode\\)\" } catch { if \\($_.Exception.Response\\) { \"Server is UP \\(got $\\($_.Exception.Response.StatusCode.value__\\) — expected without token\\)\" } else { \"Server NOT running: $\\($_.Exception.Message\\)\" } })",
+      "PowerShell(Start-Process powershell -ArgumentList \"-NoExit\", \"-Command\", \"cd 'C:\\\\Users\\\\CICT\\\\Desktop\\\\lv\\\\frontend'; npm run dev\" -WindowStyle Normal; \"Frontend started in background window\")"
     ]
   }
 }

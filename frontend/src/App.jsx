@@ -64,17 +64,22 @@ const StartupScreen = ({ exiting }) => (
 )
 
 const AppRoutes = () => {
-  const { loading } = useAuth()
+  const { loading, loggingOut } = useAuth()
   const [showStartup, setShowStartup] = useState(true)
   const [exiting, setExiting]         = useState(false)
 
   useEffect(() => {
-    if (!loading && showStartup) {
+    if (loggingOut) {
+      // Logout started — bring the screen back
+      setShowStartup(true)
+      setExiting(false)
+    } else if (!loading && showStartup) {
+      // Auth resolved (initial load or post-logout) — exit the screen
       setExiting(true)
       const t = setTimeout(() => setShowStartup(false), 450)
       return () => clearTimeout(t)
     }
-  }, [loading, showStartup])
+  }, [loading, loggingOut, showStartup])
 
   return (
     <>

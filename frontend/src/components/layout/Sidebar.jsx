@@ -38,8 +38,7 @@ const studentNav = [
   { to: '/profile',       icon: IconUser,            label: 'Profile',                 color: 'bg-amber-500'   },
 ]
 
-const navMap = { ADMIN: adminNav, STAFF: staffNav, STUDENT: studentNav }
-
+const navMap  = { ADMIN: adminNav, STAFF: staffNav, STUDENT: studentNav }
 const roleMeta = {
   ADMIN:   { label: 'Administrator', tag: 'ADMIN'   },
   STAFF:   { label: 'Staff Member',  tag: 'STAFF'   },
@@ -51,10 +50,10 @@ const PORTAL_BG  = 'linear-gradient(180deg, #0B0720 0%, #170F3E 60%, #0E0B26 100
 
 // ── Student Sidebar ──────────────────────────────────────────────────────────
 
-const StudentSidebar = ({ nav, collapsed, setCollapsed, onClose, displayName, initials, onLogout }) => (
-  <div className="flex flex-col h-full relative overflow-hidden">
-    {/* Decorative background bubbles */}
-    <div className="absolute inset-0 pointer-events-none select-none" aria-hidden="true">
+const StudentSidebar = ({ nav, collapsed, onClose, displayName, initials, onLogout }) => (
+  <div className="flex flex-col h-full relative">
+    {/* Bubbles — scoped overflow so they don't clip the tab toggle */}
+    <div className="absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden="true">
       <div className="absolute w-40 h-40 rounded-full bg-white/10 -top-12 -right-14" />
       <div className="absolute w-24 h-24 rounded-full bg-white/10 top-16 -left-8" />
       <div className="absolute w-16 h-16 rounded-full bg-white/15 top-[42%] right-2" />
@@ -63,14 +62,6 @@ const StudentSidebar = ({ nav, collapsed, setCollapsed, onClose, displayName, in
       <div className="absolute w-8  h-8  rounded-full bg-white/15 bottom-10 left-8" />
       <div className="absolute w-6  h-6  rounded-full bg-white/10 top-[30%] left-3" />
     </div>
-
-    {/* Collapse toggle */}
-    <button
-      onClick={() => setCollapsed(p => !p)}
-      className="hidden lg:flex absolute -right-3 top-7 z-20 w-6 h-6 bg-white rounded-full border border-orange-200 items-center justify-center text-orange-500 hover:text-orange-700 transition-colors shadow-sm"
-    >
-      {collapsed ? <IconChevronRight size={11} /> : <IconChevronLeft size={11} />}
-    </button>
 
     {/* Logo */}
     <div className="relative z-10 px-4 pt-5 pb-4 border-b border-white/20">
@@ -116,7 +107,7 @@ const StudentSidebar = ({ nav, collapsed, setCollapsed, onClose, displayName, in
       ))}
     </nav>
 
-    {/* User section */}
+    {/* User */}
     <div className="relative z-10 px-2 pb-4 pt-3 border-t border-white/20">
       {!collapsed && (
         <div className="flex items-center gap-2.5 mb-2.5 bg-white/15 rounded-2xl px-3 py-2.5">
@@ -166,7 +157,7 @@ const portalAccent = {
   },
 }
 
-const PortalSidebar = ({ nav, role, collapsed, setCollapsed, onClose, displayName, initials, meta, onLogout }) => {
+const PortalSidebar = ({ nav, role, collapsed, onClose, displayName, initials, meta, onLogout }) => {
   const a = portalAccent[role] || portalAccent.STAFF
 
   return (
@@ -179,14 +170,6 @@ const PortalSidebar = ({ nav, role, collapsed, setCollapsed, onClose, displayNam
         className="absolute inset-0 pointer-events-none"
         style={{ background: `radial-gradient(ellipse at 75% 0%, ${a.glow} 0%, transparent 55%)` }}
       />
-
-      {/* Collapse toggle */}
-      <button
-        onClick={() => setCollapsed(p => !p)}
-        className="hidden lg:flex absolute -right-3 top-7 z-10 w-6 h-6 bg-[#170F3E] border border-white/10 items-center justify-center text-white/30 hover:text-white hover:border-white/30 transition-colors shadow-md"
-      >
-        {collapsed ? <IconChevronRight size={11} /> : <IconChevronLeft size={11} />}
-      </button>
 
       {/* Logo */}
       <div className="relative z-10 px-4 pt-5 pb-4 border-b border-white/10">
@@ -235,7 +218,7 @@ const PortalSidebar = ({ nav, role, collapsed, setCollapsed, onClose, displayNam
         ))}
       </nav>
 
-      {/* User section */}
+      {/* User */}
       <div className="relative z-10 px-2 pb-4 pt-3 border-t border-white/10">
         {!collapsed && (
           <div className="flex items-center gap-2.5 mb-2 px-1.5">
@@ -269,48 +252,76 @@ const PortalSidebar = ({ nav, role, collapsed, setCollapsed, onClose, displayNam
 // ── Sidebar controller ───────────────────────────────────────────────────────
 
 const SidebarContent = ({ onClose }) => {
-  const { user, setUser }           = useAuth()
-  const { collapsed, setCollapsed } = useSidebar()
-  const navigate                    = useNavigate()
+  const { user, setUser, startLogout } = useAuth()
+  const { collapsed }                  = useSidebar()
+  const navigate                       = useNavigate()
 
-  const nav  = navMap[user?.role]  || []
+  const nav  = navMap[user?.role]   || []
   const meta = roleMeta[user?.role] || {}
 
   const onLogout = async () => {
     const wasStudent = user?.role === 'STUDENT'
+    startLogout()
     await logout()
     setUser(null)
     toast.success('Signed out successfully')
-    navigate(wasStudent ? '/login' : '/portal/login')
+    navigate(wasStudent ? '/login' : '/portal/login', { replace: true })
   }
 
   const profile     = user?.studentProfile || user?.staffProfile
   const displayName = profile ? `${profile.firstName} ${profile.lastName}` : user?.email?.split('@')[0]
   const initials    = displayName?.slice(0, 2).toUpperCase()
 
-  const shared = { nav, collapsed, setCollapsed, onClose, displayName, initials, onLogout }
+  const shared = { nav, collapsed, onClose, displayName, initials, onLogout }
 
   return user?.role === 'STUDENT'
     ? <StudentSidebar {...shared} />
     : <PortalSidebar  {...shared} role={user?.role} meta={meta} />
 }
 
+// ── Collapse tab toggle ──────────────────────────────────────────────────────
+
+const CollapseTab = ({ collapsed, onToggle, isStudent }) => (
+  <button
+    onClick={onToggle}
+    title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+    className={`hidden lg:flex absolute -right-[14px] top-1/2 -translate-y-1/2 z-20
+      w-[14px] h-14 rounded-r-2xl items-center justify-center shadow-lg
+      transition-all duration-200 hover:w-[18px]`}
+    style={
+      isStudent
+        ? { background: 'linear-gradient(160deg, #FF8C42, #FF6F61)' }
+        : { background: '#170F3E', border: '1px solid rgba(255,255,255,0.12)', borderLeft: 'none' }
+    }
+  >
+    {collapsed
+      ? <IconChevronRight size={9} className={isStudent ? 'text-white' : 'text-white/50'} />
+      : <IconChevronLeft  size={9} className={isStudent ? 'text-white' : 'text-white/50'} />}
+  </button>
+)
+
 // ── Exported component ───────────────────────────────────────────────────────
 
 const Sidebar = () => {
-  const { collapsed, mobileOpen, setMobileOpen } = useSidebar()
-  const { user }                                 = useAuth()
+  const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar()
+  const { user }                                               = useAuth()
 
-  const sidebarBg    = user?.role === 'STUDENT' ? STUDENT_BG : PORTAL_BG
+  const isStudent    = user?.role === 'STUDENT'
+  const sidebarBg    = isStudent ? STUDENT_BG : PORTAL_BG
   const desktopWidth = collapsed ? 'w-sidebar-sm' : 'w-sidebar'
 
   return (
     <>
-      {/* Desktop */}
+      {/* Desktop — flex row participant, fills viewport height via parent h-screen */}
       <aside
-        className={`hidden lg:flex flex-col fixed inset-y-0 left-0 z-30 ${desktopWidth} transition-width duration-300`}
+        className={`hidden lg:flex flex-col shrink-0 z-30 ${desktopWidth} transition-width duration-300 relative`}
         style={{ background: sidebarBg }}
       >
+        <CollapseTab
+          collapsed={collapsed}
+          onToggle={() => setCollapsed(p => !p)}
+          isStudent={isStudent}
+        />
         <SidebarContent onClose={undefined} />
       </aside>
 

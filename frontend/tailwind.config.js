@@ -31,7 +31,7 @@ export default {
         display: ['"Fredoka One"', 'Nunito', 'sans-serif']
       },
       width: {
-        sidebar: '220px',
+        sidebar: '256px',
         'sidebar-sm': '56px'
       },
       animation: {

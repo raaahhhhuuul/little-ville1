@@ -4,16 +4,17 @@ import Sidebar from './Sidebar'
 import Header from './Header'
 
 const Layout = ({ children, title }) => {
-  const { collapsed, setMobileOpen } = useSidebar()
+  const { setMobileOpen } = useSidebar()
   const { user } = useAuth()
-  const bg = user?.role === 'STUDENT' ? 'bg-[#FFF7EE]' : 'bg-[#F5F4F0]'
+  const isStudent = user?.role === 'STUDENT'
+  const bg = isStudent ? 'bg-[#FFF7EE]' : 'bg-[#F4F5F7]'
 
   return (
-    <div className={`min-h-screen ${bg}`}>
+    <div className={`h-screen flex overflow-hidden ${bg}`}>
       <Sidebar />
-      <div className={`transition-all duration-300 ${collapsed ? 'lg:pl-14' : 'lg:pl-[220px]'}`}>
+      <div className="flex flex-col flex-1 min-w-0">
         <Header title={title} onMenuClick={() => setMobileOpen(true)} />
-        <main className="p-4 lg:p-6 max-w-7xl mx-auto animate-fade-in">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6 animate-fade-in">
           {children}
         </main>
       </div>

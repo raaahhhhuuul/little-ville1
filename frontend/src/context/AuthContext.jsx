@@ -5,8 +5,9 @@ import { getToken } from '../api/axios'
 const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser]       = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser]           = useState(null)
+  const [loading, setLoading]     = useState(true)
+  const [loggingOut, setLoggingOut] = useState(false)
 
   const loadUser = useCallback(async () => {
     if (!getToken()) { setLoading(false); return }
@@ -22,8 +23,18 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => { loadUser() }, [loadUser])
 
+  // Auto-clear loggingOut 600 ms after user becomes null
+  useEffect(() => {
+    if (!user && loggingOut) {
+      const t = setTimeout(() => setLoggingOut(false), 600)
+      return () => clearTimeout(t)
+    }
+  }, [user, loggingOut])
+
+  const startLogout = useCallback(() => setLoggingOut(true), [])
+
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, refresh: loadUser }}>
+    <AuthContext.Provider value={{ user, setUser, loading, refresh: loadUser, loggingOut, startLogout }}>
       {children}
     </AuthContext.Provider>
   )
