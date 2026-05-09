@@ -7,8 +7,10 @@ import PortalRoute from './routes/PortalRoute'
 import AdminRoute from './routes/AdminRoute'
 
 // Auth pages
-import StudentLogin from './pages/auth/Login'
-import PortalLogin from './pages/portal/Login'
+import StudentLogin  from './pages/auth/Login'
+import StudentSignup from './pages/auth/Signup'
+import PortalLogin   from './pages/portal/Login'
+import StaffSignup   from './pages/portal/Signup'
 
 // Admin pages
 import AdminDashboard from './pages/admin/Dashboard'
@@ -85,7 +87,8 @@ const AppRoutes = () => {
     <>
       <Routes>
         {/* ── Student Portal ─────────────────────────────────── */}
-        <Route path="/login" element={<StudentLogin />} />
+        <Route path="/login"  element={<StudentLogin />} />
+        <Route path="/signup" element={<StudentSignup />} />
         <Route path="/dashboard" element={<StudentRoute><StudentDashboard /></StudentRoute>} />
         <Route path="/attendance" element={<StudentRoute><StudentAttendance /></StudentRoute>} />
         <Route path="/subjects" element={<StudentRoute><StudentSubjects /></StudentRoute>} />
@@ -94,8 +97,9 @@ const AppRoutes = () => {
         <Route path="/profile" element={<StudentRoute><StudentProfile /></StudentRoute>} />
 
         {/* ── Staff/Admin Portal ─────────────────────────────── */}
-        <Route path="/portal/login" element={<PortalLogin />} />
-        <Route path="/portal" element={<Navigate to="/portal/login" replace />} />
+        <Route path="/portal/login"   element={<PortalLogin />} />
+        <Route path="/portal/signup"  element={<StaffSignup />} />
+        <Route path="/portal"         element={<Navigate to="/portal/login" replace />} />
 
         <Route path="/portal/staff/dashboard" element={<PortalRoute><StaffDashboard /></PortalRoute>} />
         <Route path="/portal/staff/classes" element={<PortalRoute><StaffClasses /></PortalRoute>} />

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { login, logout } from '../../api/auth'
 import toast from 'react-hot-toast'
@@ -102,8 +102,12 @@ const StudentLogin = () => {
 
           <h1 className="font-display text-3xl text-gray-900">Sign in</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Student account only.{' '}
-            <a href="/portal/login" className="text-orange-500 hover:text-orange-600 hover:underline inline-flex items-center gap-0.5">
+            No account?{' '}
+            <Link to="/signup" className="text-orange-500 hover:text-orange-600 hover:underline">
+              Create one
+            </Link>
+            {' · '}
+            <a href="/portal/login" className="text-gray-400 hover:text-gray-600 hover:underline inline-flex items-center gap-0.5">
               Staff portal <IconExternalLink size={11} />
             </a>
           </p>

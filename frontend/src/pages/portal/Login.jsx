@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { login, logout } from '../../api/auth'
 import toast from 'react-hot-toast'
@@ -83,8 +83,12 @@ const PortalLogin = () => {
         <div className="bg-[#1A1D27] border border-[#2A2D3A] p-6">
           <h2 className="text-base font-medium text-white mb-0.5">Authorized access only</h2>
           <p className="text-xs text-gray-500 mb-5">
-            For staff and administrators.{' '}
-            <a href="/login" className="text-violet-400 hover:text-violet-300 inline-flex items-center gap-0.5">
+            No account?{' '}
+            <Link to="/portal/signup" className="text-violet-400 hover:text-violet-300 transition-colors">
+              Register as staff
+            </Link>
+            {' · '}
+            <a href="/login" className="text-gray-600 hover:text-gray-400 inline-flex items-center gap-0.5 transition-colors">
               Student portal <IconExternalLink size={10} />
             </a>
           </p>

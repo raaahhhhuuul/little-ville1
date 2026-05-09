@@ -41,4 +41,31 @@ const getMe = async (req, res, next) => {
   }
 }
 
-module.exports = { login, logout, refresh, getMe }
+const getClasses = async (req, res, next) => {
+  try {
+    const classes = await authService.getClasses()
+    res.json({ success: true, data: classes })
+  } catch (err) {
+    next(err)
+  }
+}
+
+const studentSignup = async (req, res, next) => {
+  try {
+    const result = await authService.studentSignup(req.body)
+    res.status(201).json({ success: true, data: result })
+  } catch (err) {
+    next(err)
+  }
+}
+
+const staffSignup = async (req, res, next) => {
+  try {
+    const result = await authService.staffSignup(req.body)
+    res.status(201).json({ success: true, data: result })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports = { login, logout, refresh, getMe, getClasses, studentSignup, staffSignup }

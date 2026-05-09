@@ -46,6 +46,7 @@ model StudentProfile {
   userId        String    @unique
   firstName     String
   lastName      String
+  parentEmail   String?
   dateOfBirth   DateTime?
   guardianName  String?
   guardianPhone String?
@@ -90,11 +91,11 @@ model Class {
   name      String
   grade     String
   section   String?
-  staffId   String
+  staffId   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  staff       StaffProfile   @relation(fields: [staffId], references: [id])
+  staff       StaffProfile?  @relation(fields: [staffId], references: [id])
   classStudents ClassStudent[]
   subjects    Subject[]
   attendances Attendance[]
