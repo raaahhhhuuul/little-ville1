@@ -10,6 +10,7 @@ import AdminRoute from './routes/AdminRoute'
 import StudentLogin          from './pages/auth/Login'
 import StudentSignup         from './pages/auth/Signup'
 import StudentCompleteProfile from './pages/auth/CompleteProfile'
+import AuthCallback          from './pages/auth/AuthCallback'
 import PortalLogin           from './pages/portal/Login'
 import StaffSignup           from './pages/portal/Signup'
 import StaffCompleteProfile  from './pages/portal/CompleteProfile'
@@ -92,6 +93,7 @@ const AppRoutes = () => {
         <Route path="/login"            element={<StudentLogin />} />
         <Route path="/signup"           element={<StudentSignup />} />
         <Route path="/complete-profile" element={<StudentCompleteProfile />} />
+        <Route path="/auth/callback"    element={<AuthCallback />} />
         <Route path="/dashboard" element={<StudentRoute><StudentDashboard /></StudentRoute>} />
         <Route path="/attendance" element={<StudentRoute><StudentAttendance /></StudentRoute>} />
         <Route path="/subjects" element={<StudentRoute><StudentSubjects /></StudentRoute>} />

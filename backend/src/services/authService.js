@@ -1,11 +1,27 @@
-const { supabaseAdmin } = require('../utils/supabase')
+const { supabaseAdmin, supabaseAnon } = require('../utils/supabase')
 const prisma = require('../utils/prisma')
 
 const ALLOWED_DESIGNATIONS = ['TEACHER', 'ASSISTANT_TEACHER', 'COORDINATOR']
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const assertEmailVerified = (supabaseUser) => {
+  if (!supabaseUser.email_confirmed_at) {
+    throw Object.assign(
+      new Error('Please verify your email before logging in.'),
+      { status: 403, code: 'EMAIL_NOT_VERIFIED' }
+    )
+  }
+}
+
+// ── Login / Logout / Session ──────────────────────────────────────────────────
 
 const login = async (email, password) => {
   const { data, error } = await supabaseAdmin.auth.signInWithPassword({ email, password })
   if (error) throw Object.assign(new Error('Invalid email or password'), { status: 401 })
+
+  assertEmailVerified(data.user)
 
   const dbUser = await prisma.user.findUnique({
     where: { id: data.user.id },
@@ -24,9 +40,7 @@ const login = async (email, password) => {
 }
 
 const logout = async (userId) => {
-  try {
-    await supabaseAdmin.auth.admin.signOut(userId)
-  } catch (_) {}
+  try { await supabaseAdmin.auth.admin.signOut(userId) } catch (_) {}
 }
 
 const refreshSession = async (refreshToken) => {
@@ -48,12 +62,16 @@ const getCurrentUser = async (userId) => {
   return user
 }
 
+// ── Class lookup (public) ─────────────────────────────────────────────────────
+
 const getClasses = async () => {
   return prisma.class.findMany({
     select: { id: true, name: true, grade: true, section: true },
     orderBy: { createdAt: 'asc' }
   })
 }
+
+// ── Signup flows ──────────────────────────────────────────────────────────────
 
 const studentSignup = async ({ studentName, parentName, parentEmail, password, classId }) => {
   const existing = await prisma.user.findUnique({ where: { email: parentEmail } })
@@ -66,52 +84,56 @@ const studentSignup = async ({ studentName, parentName, parentEmail, password, c
   const firstName = nameParts[0]
   const lastName  = nameParts.length > 1 ? nameParts.slice(1).join(' ') : nameParts[0]
 
-  const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.createUser({
-    email:         parentEmail,
+  // Regular signUp — sends verification email, returns session: null until verified
+  const { data: authData, error: authErr } = await supabaseAnon.auth.signUp({
+    email:    parentEmail,
     password,
-    email_confirm: true,
-    user_metadata: { role: 'STUDENT' }
+    options: {
+      emailRedirectTo: `${FRONTEND_URL}/auth/callback`,
+      data: { role: 'STUDENT' }
+    }
   })
+
   if (authErr) throw Object.assign(new Error(authErr.message), { status: 400 })
+
+  // Supabase returns user with empty identities array for duplicate emails
+  if (!authData.user?.id || authData.user.identities?.length === 0) {
+    throw Object.assign(new Error('An account with this email already exists'), { status: 409 })
+  }
+
+  const userId = authData.user.id
 
   try {
     await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
-        data: { id: authData.user.id, email: parentEmail, role: 'STUDENT' }
+        data: { id: userId, email: parentEmail, role: 'STUDENT' }
       })
       const profile = await tx.studentProfile.create({
-        data: {
-          userId:      user.id,
-          firstName,
-          lastName,
-          guardianName: parentName,
-          parentEmail
-        }
+        data: { userId: user.id, firstName, lastName, guardianName: parentName, parentEmail }
       })
       await tx.classStudent.create({ data: { classId, studentId: profile.id } })
     })
   } catch (txErr) {
-    await supabaseAdmin.auth.admin.deleteUser(authData.user.id).catch(() => {})
+    await supabaseAdmin.auth.admin.deleteUser(userId).catch(() => {})
     throw txErr
   }
 
-  const { data: sessionData, error: loginErr } = await supabaseAdmin.auth.signInWithPassword({
-    email: parentEmail,
-    password
-  })
-  if (loginErr) throw Object.assign(new Error('Account created. Please sign in to continue.'), { status: 500 })
-
-  const dbUser = await prisma.user.findUnique({
-    where: { id: authData.user.id },
-    include: { studentProfile: true, staffProfile: true }
-  })
-
-  return {
-    token:        sessionData.session.access_token,
-    refreshToken: sessionData.session.refresh_token,
-    expiresAt:    sessionData.session.expires_at,
-    user:         dbUser
+  // Email confirmation disabled in Supabase → session returned immediately
+  if (authData.session) {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { studentProfile: true, staffProfile: true }
+    })
+    return {
+      requiresVerification: false,
+      token:        authData.session.access_token,
+      refreshToken: authData.session.refresh_token,
+      expiresAt:    authData.session.expires_at,
+      user:         dbUser
+    }
   }
+
+  return { requiresVerification: true, email: parentEmail }
 }
 
 const staffSignup = async ({ fullName, email, password, designation }) => {
@@ -126,43 +148,71 @@ const staffSignup = async ({ fullName, email, password, designation }) => {
   const firstName = nameParts[0]
   const lastName  = nameParts.length > 1 ? nameParts.slice(1).join(' ') : nameParts[0]
 
-  const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.createUser({
+  const { data: authData, error: authErr } = await supabaseAnon.auth.signUp({
     email,
     password,
-    email_confirm: true,
-    user_metadata: { role: 'STAFF', designation }
+    options: {
+      emailRedirectTo: `${FRONTEND_URL}/auth/callback`,
+      data: { role: 'STAFF', designation }
+    }
   })
+
   if (authErr) throw Object.assign(new Error(authErr.message), { status: 400 })
+
+  if (!authData.user?.id || authData.user.identities?.length === 0) {
+    throw Object.assign(new Error('An account with this email already exists'), { status: 409 })
+  }
+
+  const userId = authData.user.id
 
   try {
     await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
-        data: { id: authData.user.id, email, role: 'STAFF' }
+        data: { id: userId, email, role: 'STAFF' }
       })
       await tx.staffProfile.create({
         data: { userId: user.id, firstName, lastName, designation }
       })
     })
   } catch (txErr) {
-    await supabaseAdmin.auth.admin.deleteUser(authData.user.id).catch(() => {})
+    await supabaseAdmin.auth.admin.deleteUser(userId).catch(() => {})
     throw txErr
   }
 
-  const { data: sessionData, error: loginErr } = await supabaseAdmin.auth.signInWithPassword({ email, password })
-  if (loginErr) throw Object.assign(new Error('Account created. Please sign in to continue.'), { status: 500 })
+  if (authData.session) {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { studentProfile: true, staffProfile: true }
+    })
+    return {
+      requiresVerification: false,
+      token:        authData.session.access_token,
+      refreshToken: authData.session.refresh_token,
+      expiresAt:    authData.session.expires_at,
+      user:         dbUser
+    }
+  }
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: authData.user.id },
-    include: { studentProfile: true, staffProfile: true }
+  return { requiresVerification: true, email }
+}
+
+// ── Resend verification email ─────────────────────────────────────────────────
+
+const resendVerification = async (email) => {
+  const dbUser = await prisma.user.findUnique({ where: { email } })
+  if (!dbUser) throw Object.assign(new Error('No account found with this email'), { status: 404 })
+
+  const { error } = await supabaseAnon.auth.resend({
+    type:  'signup',
+    email,
+    options: { emailRedirectTo: `${FRONTEND_URL}/auth/callback` }
   })
 
-  return {
-    token:        sessionData.session.access_token,
-    refreshToken: sessionData.session.refresh_token,
-    expiresAt:    sessionData.session.expires_at,
-    user:         dbUser
-  }
+  if (error) throw Object.assign(new Error(error.message), { status: 400 })
+  return { message: 'Verification email sent' }
 }
+
+// ── Admin helpers ─────────────────────────────────────────────────────────────
 
 const createUserWithProfile = async ({ email, password, role, firstName, lastName, ...profileData }) => {
   const { data, error } = await supabaseAdmin.auth.admin.createUser({
@@ -199,6 +249,6 @@ const reactivateUser = async (userId) => {
 
 module.exports = {
   login, logout, refreshSession, getCurrentUser,
-  getClasses, studentSignup, staffSignup,
+  getClasses, studentSignup, staffSignup, resendVerification,
   createUserWithProfile, deactivateUser, reactivateUser
 }

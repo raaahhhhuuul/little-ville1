@@ -68,4 +68,14 @@ const staffSignup = async (req, res, next) => {
   }
 }
 
-module.exports = { login, logout, refresh, getMe, getClasses, studentSignup, staffSignup }
+const resendVerification = async (req, res, next) => {
+  try {
+    const { email } = req.body
+    const result = await authService.resendVerification(email)
+    res.json({ success: true, data: result })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports = { login, logout, refresh, getMe, getClasses, studentSignup, staffSignup, resendVerification }

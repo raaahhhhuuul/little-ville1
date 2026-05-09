@@ -4,7 +4,7 @@ const { authenticate } = require('../middleware/auth')
 const { validate } = require('../middleware/errorHandler')
 const {
   login, logout, refresh, getMe,
-  getClasses, studentSignup, staffSignup
+  getClasses, studentSignup, staffSignup, resendVerification
 } = require('../controllers/authController')
 
 router.post('/login',
@@ -53,6 +53,12 @@ router.post('/staff-signup',
   ],
   validate,
   staffSignup
+)
+
+router.post('/resend-verification',
+  [body('email').isEmail().withMessage('Valid email required').normalizeEmail()],
+  validate,
+  resendVerification
 )
 
 module.exports = router

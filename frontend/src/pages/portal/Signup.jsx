@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { staffSignup } from '../../api/auth'
+import { staffSignup, resendVerification } from '../../api/auth'
 import toast from 'react-hot-toast'
 import {
   IconEye, IconEyeOff, IconSpinner, IconShield,
@@ -32,6 +32,8 @@ const StaffSignup = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
   const [pwErr, setPwErr]     = useState('')
+  const [verificationEmail, setVerificationEmail] = useState('')
+  const [resending, setResending] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -54,13 +56,17 @@ const StaffSignup = () => {
 
     setLoading(true)
     try {
-      const { user: u } = await staffSignup({
+      const result = await staffSignup({
         fullName:    form.fullName,
         email:       form.email,
         password:    form.password,
         designation: form.designation
       })
-      setUser(u)
+      if (result.requiresVerification) {
+        setVerificationEmail(result.email)
+        return
+      }
+      setUser(result.user)
       toast.success('Account created! Welcome to the portal.')
       navigate('/portal/staff/dashboard', { replace: true })
     } catch (err) {
@@ -75,6 +81,59 @@ const StaffSignup = () => {
   }
 
   const strength = pwStrength(form.password)
+
+  const handleResend = async () => {
+    setResending(true)
+    try {
+      await resendVerification(verificationEmail)
+      toast.success('Verification email resent!')
+    } catch {
+      toast.error('Failed to resend. Try again shortly.')
+    } finally {
+      setResending(false)
+    }
+  }
+
+  if (verificationEmail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 relative" style={{ background: '#0F1117' }}>
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+            backgroundSize: '48px 48px'
+          }}
+        />
+        <div className="w-full max-w-sm z-10 text-center animate-slide-up">
+          <div className="w-14 h-14 bg-violet-600/20 border border-violet-500/30 flex items-center justify-center mx-auto mb-5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </svg>
+          </div>
+          <h1 className="font-display text-2xl text-white">Check your email</h1>
+          <p className="text-gray-400 text-sm mt-3 leading-relaxed">
+            We sent a verification link to<br />
+            <span className="text-gray-200">{verificationEmail}</span>
+          </p>
+          <p className="text-gray-600 text-xs mt-3">
+            Click the link in the email to activate your account.
+          </p>
+          <button
+            onClick={handleResend}
+            disabled={resending}
+            className="mt-6 text-sm text-violet-400 hover:text-violet-300 transition-colors disabled:opacity-50 flex items-center gap-1.5 mx-auto"
+          >
+            {resending && <IconSpinner size={14} />}
+            Resend verification email
+          </button>
+          <p className="mt-6 text-xs text-gray-700">
+            <Link to="/portal/login" className="text-violet-400 hover:text-violet-300 transition-colors">Back to sign in</Link>
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div

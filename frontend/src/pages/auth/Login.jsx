@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { login, logout } from '../../api/auth'
+import { login, logout, resendVerification } from '../../api/auth'
 import toast from 'react-hot-toast'
 import { IconEye, IconEyeOff, IconSpinner, IconAlertCircle, IconExternalLink, IconGraduation } from '../../components/common/Icons'
 
@@ -12,6 +12,8 @@ const StudentLogin = () => {
   const [showPw, setShowPw]   = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
+  const [unverifiedEmail, setUnverifiedEmail] = useState('')
+  const [resending, setResending] = useState(false)
 
   if (user) {
     if (user.role === 'STUDENT') navigate('/dashboard', { replace: true })
@@ -37,11 +39,26 @@ const StudentLogin = () => {
     } catch (err) {
       if (!err.response) {
         setError('Cannot connect to server. Make sure the backend is running on port 5000.')
+      } else if (err.response?.data?.code === 'EMAIL_NOT_VERIFIED') {
+        setUnverifiedEmail(form.email)
+        setError(err.response.data.message)
       } else {
         setError(err.response?.data?.message || 'Invalid email or password')
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleResend = async () => {
+    setResending(true)
+    try {
+      await resendVerification(unverifiedEmail)
+      toast.success('Verification email resent!')
+    } catch {
+      toast.error('Failed to resend. Try again shortly.')
+    } finally {
+      setResending(false)
     }
   }
 
@@ -121,6 +138,15 @@ const StudentLogin = () => {
                   <a href="/portal/login" className="text-xs text-rose-600 hover:underline mt-1 block">
                     → Go to Staff Portal
                   </a>
+                )}
+                {unverifiedEmail && (
+                  <button
+                    onClick={handleResend}
+                    disabled={resending}
+                    className="text-xs text-rose-600 hover:underline mt-1 block disabled:opacity-50"
+                  >
+                    {resending ? 'Sending…' : '→ Resend verification email'}
+                  </button>
                 )}
               </div>
             </div>

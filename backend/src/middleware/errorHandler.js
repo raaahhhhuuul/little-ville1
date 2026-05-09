@@ -24,7 +24,9 @@ const errorHandler = (err, req, res, next) => {
 
   const status = err.status || err.statusCode || 500
   const message = err.message || 'Internal Server Error'
-  res.status(status).json({ success: false, message })
+  const body = { success: false, message }
+  if (err.code && typeof err.code === 'string' && !err.code.startsWith('P')) body.code = err.code
+  res.status(status).json(body)
 }
 
 const notFound = (req, res) => {

@@ -28,18 +28,25 @@ export const studentSignup = async ({ studentName, parentName, parentEmail, pass
   const res = await api.post('/auth/student-signup', {
     studentName, parentName, parentEmail, password, classId
   })
-  const { token, user } = res.data.data
-  setToken(token)
-  setUserRole(user.role)
-  return { user, token }
+  const data = res.data.data
+  if (data.requiresVerification) return { requiresVerification: true, email: data.email }
+  setToken(data.token)
+  setUserRole(data.user.role)
+  return { user: data.user, token: data.token }
 }
 
 export const staffSignup = async ({ fullName, email, password, designation }) => {
   const res = await api.post('/auth/staff-signup', {
     fullName, email, password, designation
   })
-  const { token, user } = res.data.data
-  setToken(token)
-  setUserRole(user.role)
-  return { user, token }
+  const data = res.data.data
+  if (data.requiresVerification) return { requiresVerification: true, email: data.email }
+  setToken(data.token)
+  setUserRole(data.user.role)
+  return { user: data.user, token: data.token }
+}
+
+export const resendVerification = async (email) => {
+  const res = await api.post('/auth/resend-verification', { email })
+  return res.data.data
 }

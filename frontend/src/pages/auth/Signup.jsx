@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { studentSignup, getClasses } from '../../api/auth'
+import { studentSignup, getClasses, resendVerification } from '../../api/auth'
 import toast from 'react-hot-toast'
 import {
   IconEye, IconEyeOff, IconSpinner, IconAlertCircle,
@@ -30,6 +30,8 @@ const StudentSignup = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
   const [pwErr, setPwErr]     = useState('')
+  const [verificationEmail, setVerificationEmail] = useState('')
+  const [resending, setResending] = useState(false)
 
   useEffect(() => {
     getClasses()
@@ -60,14 +62,18 @@ const StudentSignup = () => {
 
     setLoading(true)
     try {
-      const { user: u } = await studentSignup({
+      const result = await studentSignup({
         studentName:  form.studentName,
         parentName:   form.parentName,
         parentEmail:  form.parentEmail,
         password:     form.password,
         classId:      form.classId
       })
-      setUser(u)
+      if (result.requiresVerification) {
+        setVerificationEmail(result.email)
+        return
+      }
+      setUser(result.user)
       toast.success('Welcome to Little Ville!')
       navigate('/dashboard', { replace: true })
     } catch (err) {
@@ -82,6 +88,53 @@ const StudentSignup = () => {
   }
 
   const strength = pwStrength(form.password)
+
+  const handleResend = async () => {
+    setResending(true)
+    try {
+      await resendVerification(verificationEmail)
+      toast.success('Verification email resent!')
+    } catch {
+      toast.error('Failed to resend. Try again shortly.')
+    } finally {
+      setResending(false)
+    }
+  }
+
+  if (verificationEmail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: '#FFF7EE' }}>
+        <div className="w-full max-w-sm text-center animate-slide-up">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+            style={{ background: 'linear-gradient(135deg, #FF8C42, #FF6F61)' }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </svg>
+          </div>
+          <h1 className="font-display text-3xl text-gray-900">Check your email</h1>
+          <p className="text-gray-500 text-sm mt-3 leading-relaxed">
+            We sent a verification link to<br />
+            <span className="font-medium text-gray-700">{verificationEmail}</span>
+          </p>
+          <p className="text-gray-400 text-xs mt-3">
+            Click the link in the email to activate your account.
+          </p>
+          <button
+            onClick={handleResend}
+            disabled={resending}
+            className="mt-6 text-sm text-orange-500 hover:text-orange-600 hover:underline disabled:opacity-50 flex items-center gap-1.5 mx-auto"
+          >
+            {resending && <IconSpinner size={14} />}
+            Resend verification email
+          </button>
+          <p className="mt-6 text-xs text-gray-400">
+            <Link to="/login" className="text-orange-500 hover:underline">Back to sign in</Link>
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex" style={{ background: '#FFF7EE' }}>

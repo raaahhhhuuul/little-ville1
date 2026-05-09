@@ -14,7 +14,8 @@
       "PowerShell(Start-Sleep -Seconds 5; Invoke-RestMethod -Uri \"http://localhost:5000/api/auth/classes\" -Method Get | ConvertTo-Json)",
       "PowerShell(Receive-Job *)",
       "PowerShell(Stop-Job *)",
-      "PowerShell(Start-Process powershell -ArgumentList \"-NoExit\", \"-Command\", \"cd 'C:\\\\Users\\\\CICT\\\\Desktop\\\\lv\\\\backend'; npm run dev\")"
+      "PowerShell(Start-Process powershell -ArgumentList \"-NoExit\", \"-Command\", \"cd 'C:\\\\Users\\\\CICT\\\\Desktop\\\\lv\\\\backend'; npm run dev\")",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\CICT\\\\Desktop\\\\lv\\\\backend\" -Name -Force | Where-Object { $_ -match \"env\" })"
     ]
   }
 }
