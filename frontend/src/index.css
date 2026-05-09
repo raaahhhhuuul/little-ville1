@@ -7,83 +7,92 @@
 
   body {
     @apply font-sans antialiased text-gray-800;
-    background-color: #FFFBEB;
-    background-image: radial-gradient(circle, rgba(251,191,36,0.13) 1.5px, transparent 1.5px);
-    background-size: 28px 28px;
+    background-color: #F5F4F0;
   }
 
-  h1, h2, h3 { @apply font-bold; }
+  h1, h2, h3 { @apply font-medium; }
 
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: #FFF7ED; }
-  ::-webkit-scrollbar-thumb { @apply bg-orange-200 rounded-full; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-orange-300; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { @apply bg-gray-100; }
+  ::-webkit-scrollbar-thumb { @apply bg-gray-300; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-gray-400; }
 }
 
 @layer components {
   /* ── Buttons ─────────────────────────────────────────── */
   .btn-primary {
-    @apply bg-orange-500 text-white px-5 py-2.5 rounded-2xl font-bold
+    @apply bg-orange-500 text-white px-5 py-2.5 text-sm font-medium
            hover:bg-orange-600 active:scale-95
-           focus:outline-none focus:ring-4 focus:ring-orange-300
-           transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed
-           shadow-md shadow-orange-200;
+           focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1
+           transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-secondary {
-    @apply bg-white text-violet-700 px-5 py-2.5 rounded-2xl font-bold
-           border-2 border-violet-200
-           hover:bg-violet-50 active:scale-95
-           focus:outline-none focus:ring-4 focus:ring-violet-200
-           transition-all duration-150 shadow-sm;
+    @apply bg-white text-gray-700 px-5 py-2.5 text-sm font-medium
+           border border-gray-300
+           hover:bg-gray-50 active:scale-95
+           focus:outline-none focus:ring-2 focus:ring-gray-300
+           transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-danger {
-    @apply bg-rose-500 text-white px-5 py-2.5 rounded-2xl font-bold
+    @apply bg-rose-500 text-white px-5 py-2.5 text-sm font-medium
            hover:bg-rose-600 active:scale-95
-           focus:outline-none focus:ring-4 focus:ring-rose-300
-           transition-all duration-150 shadow-md shadow-rose-200;
+           focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-1
+           transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-violet {
+    @apply bg-violet-600 text-white px-5 py-2.5 text-sm font-medium
+           hover:bg-violet-700 active:scale-95
+           focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1
+           transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   /* ── Card ────────────────────────────────────────────── */
   .card {
-    @apply bg-white rounded-3xl p-6
-           border-2 border-orange-100
-           shadow-[0_2px_20px_-4px_rgba(249,115,22,0.10)];
+    @apply bg-white p-6 border border-gray-200;
   }
 
   /* ── Form ────────────────────────────────────────────── */
   .input-field {
-    @apply w-full px-4 py-2.5 rounded-2xl text-sm font-medium
-           border-2 border-orange-200 bg-orange-50/40
-           focus:outline-none focus:ring-4 focus:ring-orange-200 focus:border-orange-400
+    @apply w-full px-3.5 py-2.5 text-sm font-normal
+           border border-gray-300 bg-white
+           focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400
            transition-all placeholder:text-gray-400;
   }
   .label {
-    @apply block text-sm font-bold text-violet-700 mb-1.5;
+    @apply block text-sm font-medium text-gray-700 mb-1.5;
   }
 
   /* ── Badges ──────────────────────────────────────────── */
   .badge-green {
-    @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold
-           bg-emerald-100 text-emerald-700 border border-emerald-200;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium
+           bg-emerald-50 text-emerald-700 border border-emerald-200;
   }
   .badge-red {
-    @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold
-           bg-rose-100 text-rose-700 border border-rose-200;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium
+           bg-rose-50 text-rose-700 border border-rose-200;
   }
   .badge-yellow {
-    @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold
-           bg-amber-100 text-amber-700 border border-amber-200;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium
+           bg-amber-50 text-amber-700 border border-amber-200;
   }
   .badge-blue {
-    @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold
-           bg-sky-100 text-sky-700 border border-sky-200;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium
+           bg-sky-50 text-sky-700 border border-sky-200;
   }
   .badge-purple {
-    @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold
-           bg-violet-100 text-violet-700 border border-violet-200;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium
+           bg-violet-50 text-violet-700 border border-violet-200;
   }
   .badge-orange {
-    @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold
-           bg-orange-100 text-orange-700 border border-orange-200;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium
+           bg-orange-50 text-orange-700 border border-orange-200;
+  }
+
+  /* ── Page section heading ────────────────────────────── */
+  .page-title {
+    @apply text-lg font-medium text-gray-900;
+  }
+  .page-subtitle {
+    @apply text-sm text-gray-500 mt-0.5;
   }
 }

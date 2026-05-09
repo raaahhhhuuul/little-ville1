@@ -5,7 +5,7 @@ const { validate } = require('../middleware/errorHandler')
 const { body } = require('express-validator')
 const ctrl = require('../controllers/studentController')
 
-router.use(authenticate, authorize('STUDENT', 'ADMIN'))
+router.use(authenticate, authorize('STUDENT'))
 
 router.get('/profile', ctrl.getProfile)
 router.patch('/profile', ctrl.updateProfile)

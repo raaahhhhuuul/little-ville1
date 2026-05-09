@@ -20,60 +20,41 @@ export default {
           900: '#7c2d12',
           950: '#431407'
         },
-        kinder: {
-          cream:  '#FFFBEB',
-          red:    '#F87171',
-          orange: '#FB923C',
-          yellow: '#FCD34D',
-          green:  '#4ADE80',
-          blue:   '#60A5FA',
-          purple: '#C084FC',
-          pink:   '#F472B6',
-          violet: '#7C3AED',
-          teal:   '#2DD4BF'
+        portal: {
+          bg:   '#0F1117',
+          card: '#1A1D27',
+          border: '#2A2D3A'
         }
       },
       fontFamily: {
         sans:    ['Nunito', 'system-ui', 'sans-serif'],
         display: ['"Fredoka One"', 'Nunito', 'sans-serif']
       },
-      borderRadius: {
-        '4xl': '2rem',
-        '5xl': '2.5rem'
-      },
-      boxShadow: {
-        kinder: '0 4px 24px -4px rgba(124, 58, 237, 0.15)',
-        card:   '0 2px 16px -2px rgba(249, 115, 22, 0.10), 0 0 0 1px rgba(253, 186, 116, 0.2)'
+      width: {
+        sidebar: '220px',
+        'sidebar-sm': '56px'
       },
       animation: {
-        'fade-in':   'fadeIn 0.3s ease-in-out',
-        'slide-in':  'slideIn 0.3s ease-out',
-        'wiggle':    'wiggle 2.5s ease-in-out infinite',
-        'float':     'float 3.5s ease-in-out infinite',
-        'float-slow':'float 5s ease-in-out infinite',
-        'pop':       'pop 0.35s cubic-bezier(0.34,1.56,0.64,1)',
-        'spin-slow': 'spin 3s linear infinite',
-        'blob':      'blob 7s infinite',
+        'fade-in':      'fadeIn 0.35s ease-out',
+        'slide-up':     'slideUp 0.35s ease-out',
+        'slide-in':     'slideIn 0.3s ease-out',
+        'startup-exit': 'startupExit 0.45s ease-in forwards',
+        'stagger-1':    'slideUp 0.35s ease-out 0.05s both',
+        'stagger-2':    'slideUp 0.35s ease-out 0.10s both',
+        'stagger-3':    'slideUp 0.35s ease-out 0.15s both',
+        'stagger-4':    'slideUp 0.35s ease-out 0.20s both',
+        'stagger-5':    'slideUp 0.35s ease-out 0.25s both',
+        'stagger-6':    'slideUp 0.35s ease-out 0.30s both',
+        'spin-slow':    'spin 2.5s linear infinite',
       },
       keyframes: {
-        fadeIn:  { from: { opacity: 0 }, to: { opacity: 1 } },
-        slideIn: { from: { transform: 'translateX(-12px)', opacity: 0 }, to: { transform: 'translateX(0)', opacity: 1 } },
-        wiggle: {
-          '0%, 100%': { transform: 'rotate(-5deg)' },
-          '50%':      { transform: 'rotate(5deg)' }
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%':      { transform: 'translateY(-12px)' }
-        },
-        pop: {
-          '0%':   { transform: 'scale(0.75)', opacity: '0' },
-          '100%': { transform: 'scale(1)',    opacity: '1' }
-        },
-        blob: {
-          '0%, 100%': { borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' },
-          '50%':      { borderRadius: '30% 60% 70% 40% / 50% 60% 30% 60%' }
-        }
+        fadeIn:      { from: { opacity: '0' },                                          to: { opacity: '1' } },
+        slideUp:     { from: { transform: 'translateY(10px)', opacity: '0' },           to: { transform: 'translateY(0)', opacity: '1' } },
+        slideIn:     { from: { transform: 'translateX(-10px)', opacity: '0' },          to: { transform: 'translateX(0)', opacity: '1' } },
+        startupExit: { from: { opacity: '1', transform: 'scale(1)' },                   to: { opacity: '0', transform: 'scale(1.03)' } },
+      },
+      transitionProperty: {
+        'width': 'width',
       }
     }
   },

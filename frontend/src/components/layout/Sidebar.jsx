@@ -1,156 +1,334 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useSidebar } from '../../context/SidebarContext'
 import { logout } from '../../api/auth'
 import toast from 'react-hot-toast'
 import {
-  LayoutDashboard, Users, ClipboardList, DollarSign, Bell, BarChart3,
-  BookOpen, GraduationCap, CheckSquare, User, LogOut, X, School
-} from 'lucide-react'
+  IconLayoutDashboard, IconUsers, IconClipboard, IconDollar, IconBell, IconBarChart,
+  IconBook, IconGraduation, IconCheckSquare, IconUser, IconLogOut, IconX, IconSchool,
+  IconChevronLeft, IconChevronRight
+} from '../common/Icons'
+
+// ── Nav definitions ──────────────────────────────────────────────────────────
 
 const adminNav = [
-  { to: '/admin',              icon: LayoutDashboard, label: 'Dashboard',       end: true },
-  { to: '/admin/users',        icon: Users,           label: 'Users'                      },
-  { to: '/admin/attendance',   icon: ClipboardList,   label: 'Staff Attendance'           },
-  { to: '/admin/salary',       icon: DollarSign,      label: 'Salary'                     },
-  { to: '/admin/notifications',icon: Bell,            label: 'Notifications'              },
-  { to: '/admin/analytics',    icon: BarChart3,       label: 'Analytics'                  }
+  { to: '/portal/admin/dashboard',     icon: IconLayoutDashboard, label: 'Dashboard',      end: true },
+  { to: '/portal/admin/users',         icon: IconUsers,           label: 'Users'                     },
+  { to: '/portal/admin/attendance',    icon: IconClipboard,       label: 'Staff Attendance'          },
+  { to: '/portal/admin/salary',        icon: IconDollar,          label: 'Salary'                    },
+  { to: '/portal/admin/notifications', icon: IconBell,            label: 'Notifications'             },
+  { to: '/portal/admin/analytics',     icon: IconBarChart,        label: 'Analytics'                 },
 ]
 
 const staffNav = [
-  { to: '/staff',               icon: LayoutDashboard, label: 'Dashboard',    end: true },
-  { to: '/staff/classes',       icon: School,          label: 'Classes'                 },
-  { to: '/staff/attendance',    icon: ClipboardList,   label: 'Attendance'              },
-  { to: '/staff/quizzes',       icon: BookOpen,        label: 'Quizzes'                 },
-  { to: '/staff/notifications', icon: Bell,            label: 'Notifications'           },
-  { to: '/staff/profile',       icon: User,            label: 'Profile'                 }
+  { to: '/portal/staff/dashboard',     icon: IconLayoutDashboard, label: 'Dashboard',   end: true },
+  { to: '/portal/staff/classes',       icon: IconSchool,          label: 'Classes'               },
+  { to: '/portal/staff/attendance',    icon: IconClipboard,       label: 'Attendance'            },
+  { to: '/portal/staff/quizzes',       icon: IconBook,            label: 'Quizzes'               },
+  { to: '/portal/staff/notifications', icon: IconBell,            label: 'Notifications'         },
+  { to: '/portal/staff/profile',       icon: IconUser,            label: 'Profile'               },
 ]
 
 const studentNav = [
-  { to: '/student',               icon: LayoutDashboard, label: 'Dashboard',     end: true },
-  { to: '/student/attendance',    icon: ClipboardList,   label: 'Attendance'               },
-  { to: '/student/subjects',      icon: BookOpen,        label: 'Subjects'                 },
-  { to: '/student/quizzes',       icon: CheckSquare,     label: 'Quizzes'                  },
-  { to: '/student/notifications', icon: Bell,            label: 'Notifications'            },
-  { to: '/student/profile',       icon: User,            label: 'Profile'                  }
+  { to: '/dashboard',     icon: IconLayoutDashboard, label: 'Dashboard',     end: true, color: 'bg-orange-400'  },
+  { to: '/attendance',    icon: IconClipboard,       label: 'Attendance',              color: 'bg-emerald-400' },
+  { to: '/subjects',      icon: IconBook,            label: 'Subjects',                color: 'bg-sky-400'     },
+  { to: '/quizzes',       icon: IconCheckSquare,     label: 'Quizzes',                 color: 'bg-violet-400'  },
+  { to: '/notifications', icon: IconBell,            label: 'Notifications',           color: 'bg-rose-400'    },
+  { to: '/profile',       icon: IconUser,            label: 'Profile',                 color: 'bg-amber-500'   },
 ]
 
-const navMap   = { ADMIN: adminNav, STAFF: staffNav, STUDENT: studentNav }
+const navMap = { ADMIN: adminNav, STAFF: staffNav, STUDENT: studentNav }
+
 const roleMeta = {
-  ADMIN:   { label: 'Administrator', emoji: '👑' },
-  STAFF:   { label: 'Staff Member',  emoji: '🍎' },
-  STUDENT: { label: 'Student',       emoji: '🎒' }
+  ADMIN:   { label: 'Administrator', tag: 'ADMIN'   },
+  STAFF:   { label: 'Staff Member',  tag: 'STAFF'   },
+  STUDENT: { label: 'Student',       tag: 'STUDENT' },
 }
 
-const Sidebar = ({ mobileOpen, onClose }) => {
-  const { user, setUser } = useAuth()
-  const navigate  = useNavigate()
-  const nav       = navMap[user?.role] || []
-  const meta      = roleMeta[user?.role] || {}
+const STUDENT_BG = 'linear-gradient(160deg, #FF6F61 0%, #FF8C42 50%, #FFBB33 100%)'
+const PORTAL_BG  = 'linear-gradient(180deg, #0B0720 0%, #170F3E 60%, #0E0B26 100%)'
 
-  const handleLogout = async () => {
-    await logout()
-    setUser(null)
-    toast.success('See you next time! 👋')
-    navigate('/login')
-  }
+// ── Student Sidebar ──────────────────────────────────────────────────────────
 
-  const profile     = user?.studentProfile || user?.staffProfile
-  const displayName = profile
-    ? `${profile.firstName} ${profile.lastName}`
-    : user?.email?.split('@')[0]
+const StudentSidebar = ({ nav, collapsed, setCollapsed, onClose, displayName, initials, onLogout }) => (
+  <div className="flex flex-col h-full relative overflow-hidden">
+    {/* Decorative background bubbles */}
+    <div className="absolute inset-0 pointer-events-none select-none" aria-hidden="true">
+      <div className="absolute w-40 h-40 rounded-full bg-white/10 -top-12 -right-14" />
+      <div className="absolute w-24 h-24 rounded-full bg-white/10 top-16 -left-8" />
+      <div className="absolute w-16 h-16 rounded-full bg-white/15 top-[42%] right-2" />
+      <div className="absolute w-32 h-32 rounded-full bg-white/10 bottom-[28%] -left-12" />
+      <div className="absolute w-12 h-12 rounded-full bg-white/20 bottom-28 right-5" />
+      <div className="absolute w-8  h-8  rounded-full bg-white/15 bottom-10 left-8" />
+      <div className="absolute w-6  h-6  rounded-full bg-white/10 top-[30%] left-3" />
+    </div>
 
-  const initials = displayName?.slice(0, 2).toUpperCase()
+    {/* Collapse toggle */}
+    <button
+      onClick={() => setCollapsed(p => !p)}
+      className="hidden lg:flex absolute -right-3 top-7 z-20 w-6 h-6 bg-white rounded-full border border-orange-200 items-center justify-center text-orange-500 hover:text-orange-700 transition-colors shadow-sm"
+    >
+      {collapsed ? <IconChevronRight size={11} /> : <IconChevronLeft size={11} />}
+    </button>
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full">
-
-      {/* Logo */}
-      <div className="px-5 pt-6 pb-5 border-b border-white/15">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg shrink-0">
-            <GraduationCap size={24} className="text-violet-600" />
-          </div>
-          <div>
-            <p className="font-display text-2xl text-white leading-none">Little Ville</p>
-            <p className="text-white/55 text-xs font-semibold mt-0.5 tracking-wide uppercase">
-              Learning Together
+    {/* Logo */}
+    <div className="relative z-10 px-4 pt-5 pb-4 border-b border-white/20">
+      <div className="flex items-center gap-3 overflow-hidden">
+        <div className="w-9 h-9 bg-white/30 rounded-full flex items-center justify-center shrink-0 shadow-sm">
+          <IconGraduation size={18} className="text-white" strokeWidth={1.5} />
+        </div>
+        {!collapsed && (
+          <div className="overflow-hidden">
+            <p className="font-display text-xl text-white leading-none whitespace-nowrap">Little Ville</p>
+            <p className="text-white/60 text-[10px] font-medium mt-0.5 tracking-widest uppercase whitespace-nowrap">
+              Student Portal
             </p>
           </div>
+        )}
+      </div>
+    </div>
+
+    {/* Nav */}
+    <nav className="relative z-10 flex-1 px-2 py-3 space-y-1 overflow-y-auto">
+      {nav.map(({ to, icon: Icon, label, end, color }) => (
+        <NavLink
+          key={to}
+          to={to}
+          end={end}
+          onClick={onClose}
+          title={collapsed ? label : undefined}
+          className="block"
+        >
+          {({ isActive }) => (
+            <div className={`flex items-center transition-all duration-150 text-sm font-medium rounded-xl ${
+              collapsed ? 'justify-center py-2.5 px-1' : 'gap-3 px-2.5 py-2.5'
+            } ${isActive ? 'bg-white/25 text-white' : 'text-white/70 hover:text-white hover:bg-white/15'}`}>
+              <div className={`rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                collapsed ? 'w-8 h-8' : 'w-7 h-7'
+              } ${isActive ? color : 'bg-white/20'}`}>
+                <Icon size={collapsed ? 16 : 14} strokeWidth={2} />
+              </div>
+              {!collapsed && <span className="truncate">{label}</span>}
+            </div>
+          )}
+        </NavLink>
+      ))}
+    </nav>
+
+    {/* User section */}
+    <div className="relative z-10 px-2 pb-4 pt-3 border-t border-white/20">
+      {!collapsed && (
+        <div className="flex items-center gap-2.5 mb-2.5 bg-white/15 rounded-2xl px-3 py-2.5">
+          <div className="w-8 h-8 bg-white/30 rounded-full flex items-center justify-center shrink-0">
+            <span className="text-white text-xs font-medium">{initials}</span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-white text-xs font-medium truncate leading-tight">{displayName}</p>
+            <p className="text-white/50 text-[10px] mt-0.5">Student</p>
+          </div>
+        </div>
+      )}
+      <button
+        onClick={onLogout}
+        title={collapsed ? 'Sign Out' : undefined}
+        className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm font-medium text-white/60 hover:text-white hover:bg-white/20 rounded-xl transition-colors ${collapsed ? 'justify-center' : ''}`}
+      >
+        <IconLogOut size={15} className="shrink-0" />
+        {!collapsed && <span>Sign Out</span>}
+      </button>
+    </div>
+  </div>
+)
+
+// ── Portal Sidebar (Staff + Admin) ───────────────────────────────────────────
+
+const portalAccent = {
+  ADMIN: {
+    strip:    'from-violet-600 via-violet-500 to-purple-500',
+    glow:     'rgba(139,92,246,0.18)',
+    iconBg:   'rgba(124,58,237,0.3)',
+    activeBg: 'bg-violet-500/15',
+    border:   'border-violet-400',
+    avatarBg: 'linear-gradient(135deg,#7C3AED,#6D28D9)',
+    tag:      'text-violet-300 border-violet-500/40 bg-violet-500/15',
+    portal:   'Admin Portal',
+  },
+  STAFF: {
+    strip:    'from-indigo-600 via-indigo-500 to-blue-500',
+    glow:     'rgba(99,102,241,0.18)',
+    iconBg:   'rgba(99,102,241,0.3)',
+    activeBg: 'bg-indigo-500/15',
+    border:   'border-indigo-400',
+    avatarBg: 'linear-gradient(135deg,#6366F1,#4338CA)',
+    tag:      'text-indigo-300 border-indigo-500/40 bg-indigo-500/15',
+    portal:   'Staff Portal',
+  },
+}
+
+const PortalSidebar = ({ nav, role, collapsed, setCollapsed, onClose, displayName, initials, meta, onLogout }) => {
+  const a = portalAccent[role] || portalAccent.STAFF
+
+  return (
+    <div className="flex flex-col h-full relative">
+      {/* Top accent strip */}
+      <div className={`h-[3px] w-full bg-gradient-to-r ${a.strip} shrink-0`} />
+
+      {/* Radial glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: `radial-gradient(ellipse at 75% 0%, ${a.glow} 0%, transparent 55%)` }}
+      />
+
+      {/* Collapse toggle */}
+      <button
+        onClick={() => setCollapsed(p => !p)}
+        className="hidden lg:flex absolute -right-3 top-7 z-10 w-6 h-6 bg-[#170F3E] border border-white/10 items-center justify-center text-white/30 hover:text-white hover:border-white/30 transition-colors shadow-md"
+      >
+        {collapsed ? <IconChevronRight size={11} /> : <IconChevronLeft size={11} />}
+      </button>
+
+      {/* Logo */}
+      <div className="relative z-10 px-4 pt-5 pb-4 border-b border-white/10">
+        <div className="flex items-center gap-3 overflow-hidden">
+          <div
+            className="w-9 h-9 flex items-center justify-center shrink-0 border border-white/10"
+            style={{ background: a.iconBg }}
+          >
+            <IconGraduation size={17} className="text-white" strokeWidth={1.5} />
+          </div>
+          {!collapsed && (
+            <div className="overflow-hidden">
+              <p className="font-display text-xl text-white leading-none whitespace-nowrap">Little Ville</p>
+              <p className="text-white/25 text-[10px] font-medium mt-0.5 tracking-widest uppercase whitespace-nowrap">
+                {a.portal}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+      <nav className="relative z-10 flex-1 px-1 py-3 space-y-0.5 overflow-y-auto">
         {nav.map(({ to, icon: Icon, label, end }) => (
           <NavLink
             key={to}
             to={to}
             end={end}
             onClick={onClose}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-200 ${
-                isActive
-                  ? 'bg-white text-violet-700 shadow-lg shadow-black/10 scale-[1.02]'
-                  : 'text-white/70 hover:bg-white/15 hover:text-white hover:scale-[1.01]'
-              }`
-            }
+            title={collapsed ? label : undefined}
+            className="block"
           >
-            <Icon size={18} strokeWidth={isActive => isActive ? 2.5 : 2} />
-            {label}
+            {({ isActive }) => (
+              <div className={`flex items-center text-sm font-medium transition-all duration-150 border-l-2 ${
+                collapsed ? 'justify-center py-3 px-1' : 'gap-3 px-3 py-2.5'
+              } ${
+                isActive
+                  ? `${a.activeBg} text-white ${a.border}`
+                  : 'text-white/40 hover:text-white/75 hover:bg-white/5 border-transparent'
+              }`}>
+                <Icon size={16} strokeWidth={1.5} className="shrink-0" />
+                {!collapsed && <span className="truncate">{label}</span>}
+              </div>
+            )}
           </NavLink>
         ))}
       </nav>
 
-      {/* User / logout */}
-      <div className="px-4 pb-5 pt-3 border-t border-white/15">
-        <div className="flex items-center gap-3 mb-3 px-1">
-          <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 border border-white/30">
-            <span className="text-white text-sm font-bold">{initials}</span>
+      {/* User section */}
+      <div className="relative z-10 px-2 pb-4 pt-3 border-t border-white/10">
+        {!collapsed && (
+          <div className="flex items-center gap-2.5 mb-2 px-1.5">
+            <div
+              className="w-7 h-7 flex items-center justify-center shrink-0"
+              style={{ background: a.avatarBg }}
+            >
+              <span className="text-white text-[10px] font-medium">{initials}</span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-white/80 text-xs font-medium truncate leading-tight">{displayName}</p>
+              <span className={`inline-flex items-center text-[9px] font-medium tracking-widest uppercase border px-1.5 py-0.5 mt-0.5 ${a.tag}`}>
+                {meta.tag}
+              </span>
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-white text-sm font-bold truncate">{displayName}</p>
-            <p className="text-white/55 text-xs flex items-center gap-1">
-              {meta.emoji} {meta.label}
-            </p>
-          </div>
-        </div>
+        )}
         <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold
-                     text-white/65 hover:bg-white/15 hover:text-white transition-all duration-200"
+          onClick={onLogout}
+          title={collapsed ? 'Sign Out' : undefined}
+          className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors ${collapsed ? 'justify-center' : ''}`}
         >
-          <LogOut size={16} />
-          Sign Out
+          <IconLogOut size={15} className="shrink-0" />
+          {!collapsed && <span>Sign Out</span>}
         </button>
       </div>
     </div>
   )
+}
+
+// ── Sidebar controller ───────────────────────────────────────────────────────
+
+const SidebarContent = ({ onClose }) => {
+  const { user, setUser }           = useAuth()
+  const { collapsed, setCollapsed } = useSidebar()
+  const navigate                    = useNavigate()
+
+  const nav  = navMap[user?.role]  || []
+  const meta = roleMeta[user?.role] || {}
+
+  const onLogout = async () => {
+    const wasStudent = user?.role === 'STUDENT'
+    await logout()
+    setUser(null)
+    toast.success('Signed out successfully')
+    navigate(wasStudent ? '/login' : '/portal/login')
+  }
+
+  const profile     = user?.studentProfile || user?.staffProfile
+  const displayName = profile ? `${profile.firstName} ${profile.lastName}` : user?.email?.split('@')[0]
+  const initials    = displayName?.slice(0, 2).toUpperCase()
+
+  const shared = { nav, collapsed, setCollapsed, onClose, displayName, initials, onLogout }
+
+  return user?.role === 'STUDENT'
+    ? <StudentSidebar {...shared} />
+    : <PortalSidebar  {...shared} role={user?.role} meta={meta} />
+}
+
+// ── Exported component ───────────────────────────────────────────────────────
+
+const Sidebar = () => {
+  const { collapsed, mobileOpen, setMobileOpen } = useSidebar()
+  const { user }                                 = useAuth()
+
+  const sidebarBg    = user?.role === 'STUDENT' ? STUDENT_BG : PORTAL_BG
+  const desktopWidth = collapsed ? 'w-sidebar-sm' : 'w-sidebar'
 
   return (
     <>
       {/* Desktop */}
       <aside
-        className="hidden lg:flex flex-col w-64 fixed inset-y-0 left-0 z-30 shadow-2xl"
-        style={{ background: 'linear-gradient(160deg, #7C3AED 0%, #5B21B6 60%, #4C1D95 100%)' }}
+        className={`hidden lg:flex flex-col fixed inset-y-0 left-0 z-30 ${desktopWidth} transition-width duration-300`}
+        style={{ background: sidebarBg }}
       >
-        <SidebarContent />
+        <SidebarContent onClose={undefined} />
       </aside>
 
       {/* Mobile overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
           <aside
-            className="relative flex flex-col w-64 h-full shadow-2xl animate-slide-in"
-            style={{ background: 'linear-gradient(160deg, #7C3AED 0%, #5B21B6 60%, #4C1D95 100%)' }}
+            className="relative flex flex-col w-sidebar h-full shadow-2xl animate-slide-in"
+            style={{ background: sidebarBg }}
           >
             <button
-              onClick={onClose}
-              className="absolute top-4 right-4 p-1.5 rounded-xl bg-white/15 text-white hover:bg-white/25 transition-colors"
+              onClick={() => setMobileOpen(false)}
+              className="absolute top-4 right-4 p-1.5 text-white/50 hover:text-white transition-colors z-10"
             >
-              <X size={16} />
+              <IconX size={16} />
             </button>
-            <SidebarContent />
+            <SidebarContent onClose={() => setMobileOpen(false)} />
           </aside>
         </div>
       )}

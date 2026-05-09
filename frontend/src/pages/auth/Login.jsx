@@ -1,108 +1,135 @@
 import { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { login } from '../../api/auth'
+import { login, logout } from '../../api/auth'
 import toast from 'react-hot-toast'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { IconEye, IconEyeOff, IconSpinner, IconAlertCircle, IconExternalLink, IconGraduation } from '../../components/common/Icons'
 
-const redirectMap = { ADMIN: '/admin', STAFF: '/staff', STUDENT: '/student' }
-
-const demoAccounts = [
-  { role: 'Admin',   email: 'admin@kindercare.com',   emoji: '👑', gradient: 'from-violet-500 to-purple-600', bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-700' },
-  { role: 'Staff',   email: 'staff@kindercare.com',   emoji: '🍎', gradient: 'from-orange-400 to-rose-500',   bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700' },
-  { role: 'Student', email: 'student@kindercare.com', emoji: '🎒', gradient: 'from-sky-400 to-blue-500',      bg: 'bg-sky-50',    border: 'border-sky-200',    text: 'text-sky-700'    }
-]
-
-const floaters = [
-  { emoji: '⭐', pos: 'top-8 left-8',      dur: '3.5s', delay: '0s',    size: 'text-4xl' },
-  { emoji: '🌈', pos: 'top-6 right-10',    dur: '4.5s', delay: '0.8s',  size: 'text-5xl' },
-  { emoji: '🎨', pos: 'top-1/3 left-4',    dur: '4s',   delay: '0.3s',  size: 'text-3xl' },
-  { emoji: '📚', pos: 'top-2/3 right-6',   dur: '3.8s', delay: '1.1s',  size: 'text-3xl' },
-  { emoji: '✏️', pos: 'bottom-24 left-10', dur: '5s',   delay: '0.5s',  size: 'text-3xl' },
-  { emoji: '🌟', pos: 'bottom-16 right-8', dur: '3.2s', delay: '1.5s',  size: 'text-4xl' },
-  { emoji: '🎒', pos: 'top-1/2 right-4',   dur: '4.2s', delay: '0.2s',  size: 'text-2xl' },
-  { emoji: '🎯', pos: 'bottom-32 left-20', dur: '3.7s', delay: '0.9s',  size: 'text-2xl' },
-]
-
-const Login = () => {
+const StudentLogin = () => {
   const { user, setUser } = useAuth()
   const navigate          = useNavigate()
-  const location          = useLocation()
-  const [form, setForm] = useState({ email: '', password: '' })
-  const [showPw, setShowPw] = useState(false)
+  const [form, setForm]   = useState({ email: '', password: '' })
+  const [showPw, setShowPw]   = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState('')
 
   if (user) {
-    const dest = location.state?.from?.pathname || redirectMap[user.role] || '/'
-    navigate(dest, { replace: true })
+    if (user.role === 'STUDENT') navigate('/dashboard', { replace: true })
+    else navigate(user.role === 'ADMIN' ? '/portal/admin/dashboard' : '/portal/staff/dashboard', { replace: true })
     return null
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setError('')
     if (!form.email || !form.password) { toast.error('Please fill in all fields'); return }
     setLoading(true)
     try {
       const { user: u } = await login(form.email, form.password)
+      if (u.role !== 'STUDENT') {
+        await logout()
+        setError('This portal is for students only. Staff and admins must use the staff portal.')
+        return
+      }
       setUser(u)
-      toast.success('Welcome back! 🎉')
-      navigate(redirectMap[u.role] || '/', { replace: true })
+      toast.success('Welcome back!')
+      navigate('/dashboard', { replace: true })
     } catch (err) {
-      toast.error(err.message || 'Invalid credentials')
+      if (!err.response) {
+        setError('Cannot connect to server. Make sure the backend is running on port 5000.')
+      } else {
+        setError(err.response?.data?.message || 'Invalid email or password')
+      }
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{ background: 'linear-gradient(135deg, #FFFBEB 0%, #FFF0F6 50%, #EEF2FF 100%)' }}
-    >
-      {/* Animated background blobs */}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full opacity-20 animate-blob pointer-events-none"
-           style={{ background: 'radial-gradient(circle, #FCD34D, transparent 65%)', animationDelay: '0s' }} />
-      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full opacity-15 animate-blob pointer-events-none"
-           style={{ background: 'radial-gradient(circle, #C084FC, transparent 65%)', animationDelay: '3s' }} />
-      <div className="absolute top-1/2 left-1/4 w-[400px] h-[400px] rounded-full opacity-15 animate-blob pointer-events-none"
-           style={{ background: 'radial-gradient(circle, #60A5FA, transparent 65%)', animationDelay: '1.5s' }} />
-
-      {/* Floating decorations */}
-      {floaters.map(({ emoji, pos, dur, delay, size }) => (
-        <div
-          key={emoji + pos}
-          className={`absolute ${pos} ${size} select-none pointer-events-none opacity-50`}
-          style={{ animation: `float ${dur} ease-in-out infinite`, animationDelay: delay }}
-        >
-          {emoji}
-        </div>
-      ))}
-
-      {/* Login card */}
-      <div className="w-full max-w-md z-10 animate-pop">
+    <div className="min-h-screen flex" style={{ background: '#FFF7EE' }}>
+      {/* Left panel */}
+      <div
+        className="hidden lg:flex flex-col justify-between w-[420px] shrink-0 p-10"
+        style={{ background: 'linear-gradient(160deg, #FF6F61 0%, #FF8C42 55%, #FFBB33 100%)' }}
+      >
         {/* Logo */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-3xl mb-4 shadow-xl shadow-violet-200/50 border-2 border-violet-100">
-            <span className="text-5xl">🏫</span>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/25 rounded-full flex items-center justify-center">
+            <IconGraduation size={20} className="text-white" />
           </div>
-          <h1 className="font-display text-5xl text-violet-700">Little Ville</h1>
-          <p className="text-orange-500 font-bold text-sm mt-1 tracking-wide uppercase">Kindergarten Management</p>
+          <span className="font-display text-2xl text-white">Little Ville</span>
         </div>
 
-        {/* Card */}
-        <div className="bg-white/85 backdrop-blur-md rounded-4xl p-8 shadow-2xl shadow-violet-200/30 border-2 border-white">
-          <h2 className="text-xl font-bold text-violet-800 mb-1">Welcome back! 👋</h2>
-          <p className="text-sm text-gray-500 font-medium mb-6">Sign in to your account to continue</p>
+        {/* Center content */}
+        <div>
+          <p className="text-white/70 text-xs font-medium tracking-widest uppercase mb-5">Student Portal</p>
+          <h2 className="font-display text-4xl text-white leading-snug">
+            Ready to learn<br />something new?
+          </h2>
+          <p className="text-white/70 text-sm mt-4 leading-relaxed">
+            Access your attendance, subjects, quizzes and notifications — all in one colourful place!
+          </p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Feature pills */}
+          <div className="flex flex-wrap gap-2 mt-6">
+            {['Attendance', 'Subjects', 'Quizzes', 'Notifications'].map(label => (
+              <span key={label} className="bg-white/20 text-white text-xs px-3 py-1.5 rounded-full">
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom decorative dots */}
+        <div className="flex gap-2.5">
+          {['bg-white/60', 'bg-white/40', 'bg-white/30', 'bg-white/20', 'bg-white/15'].map((c, i) => (
+            <div key={i} className={`w-2.5 h-2.5 ${c} rounded-full`} />
+          ))}
+        </div>
+      </div>
+
+      {/* Right panel — form */}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="w-full max-w-sm animate-slide-up">
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2.5 mb-8 lg:hidden">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #FF8C42, #FF6F61)' }}>
+              <IconGraduation size={17} className="text-white" />
+            </div>
+            <span className="font-display text-2xl text-orange-500">Little Ville</span>
+          </div>
+
+          <h1 className="font-display text-3xl text-gray-900">Sign in</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Student account only.{' '}
+            <a href="/portal/login" className="text-orange-500 hover:text-orange-600 hover:underline inline-flex items-center gap-0.5">
+              Staff portal <IconExternalLink size={11} />
+            </a>
+          </p>
+
+          {error && (
+            <div className="mt-5 p-4 bg-rose-50 border-2 border-rose-200 rounded-2xl flex gap-2.5">
+              <IconAlertCircle size={16} className="text-rose-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-rose-700">{error}</p>
+                {error.includes('staff portal') && (
+                  <a href="/portal/login" className="text-xs text-rose-600 hover:underline mt-1 block">
+                    → Go to Staff Portal
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
               <label className="label">Email address</label>
               <input
                 type="email"
-                name="email"
                 value={form.email}
-                onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                className="input-field"
+                onChange={e => { setForm(p => ({ ...p, email: e.target.value })); setError('') }}
+                className="input-field rounded-xl"
                 placeholder="you@littleville.com"
                 required
                 autoComplete="email"
@@ -114,10 +141,9 @@ const Login = () => {
               <div className="relative">
                 <input
                   type={showPw ? 'text' : 'password'}
-                  name="password"
                   value={form.password}
-                  onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-                  className="input-field pr-11"
+                  onChange={e => { setForm(p => ({ ...p, password: e.target.value })); setError('') }}
+                  className="input-field rounded-xl pr-10"
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
@@ -125,9 +151,9 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => setShowPw(p => !p)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-500 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
                 >
-                  {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
+                  {showPw ? <IconEyeOff size={16} /> : <IconEye size={16} />}
                 </button>
               </div>
             </div>
@@ -135,42 +161,37 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full flex items-center justify-center gap-2 mt-2 py-3 text-base"
+              className="btn-primary w-full flex items-center justify-center gap-2 py-3 rounded-full"
             >
-              {loading
-                ? <><Loader2 size={18} className="animate-spin" /> Signing in...</>
-                : '🚀 Sign In'}
+              {loading ? <><IconSpinner size={16} /> Signing in...</> : 'Sign In'}
             </button>
           </form>
 
-          {/* Demo credentials */}
-          <div className="mt-6 pt-5 border-t-2 border-amber-100">
-            <p className="text-xs font-bold text-gray-400 text-center mb-3 uppercase tracking-wide">
-              Quick Demo Access
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              {demoAccounts.map(({ role, email, emoji, bg, border, text }) => (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => setForm({ email, password: `${role}@1234` })}
-                  className={`${bg} ${border} border-2 ${text} p-3 rounded-2xl text-center transition-all hover:scale-105 active:scale-95`}
-                >
-                  <div className="text-2xl mb-1">{emoji}</div>
-                  <div className="text-xs font-bold">{role}</div>
-                  <div className="text-xs opacity-60">{role}@1234</div>
-                </button>
-              ))}
-            </div>
+          {/* Demo */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Quick Demo</p>
+            <button
+              type="button"
+              onClick={() => { setForm({ email: 'student@kindercare.com', password: 'Student@1234' }); setError('') }}
+              className="w-full p-4 bg-white border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50 transition-colors text-left rounded-2xl"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
+                  <IconGraduation size={15} className="text-orange-500" strokeWidth={2} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">Student Demo</p>
+                  <p className="text-xs text-gray-400 mt-0.5">student@kindercare.com · Student@1234</p>
+                </div>
+              </div>
+            </button>
           </div>
-        </div>
 
-        <p className="text-center text-xs text-gray-400 font-medium mt-5">
-          Little Ville Management System v1.0 🌟
-        </p>
+          <p className="text-center text-xs text-gray-400 mt-6">Little Ville v1.0</p>
+        </div>
       </div>
     </div>
   )
 }
 
-export default Login
+export default StudentLogin

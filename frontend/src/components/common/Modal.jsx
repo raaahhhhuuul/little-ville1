@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { X } from 'lucide-react'
+import { IconX } from './Icons'
 
 const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   useEffect(() => {
@@ -15,17 +15,17 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative bg-white rounded-4xl shadow-2xl shadow-violet-200/40 w-full ${sizes[size]} animate-pop border-2 border-orange-100`}>
-        <div className="flex items-center justify-between px-7 py-5 border-b-2 border-orange-50">
-          <h2 className="text-lg font-bold text-violet-800">{title}</h2>
+      <div className={`relative bg-white w-full ${sizes[size]} animate-slide-up border border-gray-200 shadow-xl`}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h2 className="text-sm font-medium text-gray-900">{title}</h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-2xl hover:bg-orange-50 text-gray-400 hover:text-violet-600 transition-colors"
+            className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
           >
-            <X size={18} />
+            <IconX size={16} />
           </button>
         </div>
-        <div className="px-7 py-6">{children}</div>
+        <div className="px-6 py-5">{children}</div>
       </div>
     </div>
   )

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import EmptyState from '../../components/common/EmptyState'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
-import { CheckCircle } from 'lucide-react'
+import { IconCheckCircle, IconBell } from '../../components/common/Icons'
 import { formatDateTime } from '../../utils/helpers'
 import api from '../../api/axios'
 
@@ -11,11 +11,8 @@ const StaffNotifications = () => {
   const [loading, setLoading]             = useState(true)
 
   const load = async () => {
-    try {
-      const res = await api.get('/staff/notifications')
-      setNotifications(res.data.data || [])
-    } catch {}
-    finally { setLoading(false) }
+    try { const res = await api.get('/staff/notifications'); setNotifications(res.data.data || []) }
+    catch {} finally { setLoading(false) }
   }
 
   useEffect(() => { load() }, [])
@@ -26,41 +23,49 @@ const StaffNotifications = () => {
     load()
   }
 
-  if (loading) return <DashboardLayout title="Notifications"><LoadingSpinner fullScreen /></DashboardLayout>
-
   const unread = notifications.filter(n => !n.isRead).length
 
   return (
     <DashboardLayout title="Notifications">
       <div className="max-w-2xl space-y-4">
-        {unread > 0 && (
-          <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl px-5 py-3 text-sm font-bold text-orange-700 flex items-center gap-2">
-            🔔 {unread} unread notification{unread > 1 ? 's' : ''}
-          </div>
-        )}
-        {notifications.length === 0 ? (
-          <EmptyState message="No notifications yet" emoji="🔔" />
+        {loading ? (
+          <LoadingSpinner />
         ) : (
-          <div className="space-y-3">
-            {notifications.map(n => (
-              <div key={n.id} onClick={() => handleRead(n)}
-                className={`card cursor-pointer hover:shadow-md transition-all duration-200 ${
-                  !n.isRead ? 'border-l-4 border-l-orange-400' : 'opacity-70'
-                }`}>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      {!n.isRead && <span className="w-2 h-2 rounded-full bg-orange-400 shrink-0" />}
-                      <p className="font-bold text-gray-800 text-sm">{n.notification.title}</p>
-                    </div>
-                    <p className="text-gray-600 text-sm mt-1 font-medium">{n.notification.message}</p>
-                    <p className="text-xs text-gray-400 mt-2 font-medium">{formatDateTime(n.createdAt)}</p>
-                  </div>
-                  {n.isRead && <CheckCircle size={16} className="text-emerald-500 shrink-0" />}
-                </div>
+          <>
+            {unread > 0 && (
+              <div className="bg-indigo-50 border border-indigo-200 px-4 py-2.5 text-sm text-indigo-700 flex items-center gap-2">
+                <IconBell size={14} strokeWidth={1.5} />
+                {unread} unread notification{unread > 1 ? 's' : ''}
               </div>
-            ))}
-          </div>
+            )}
+            {notifications.length === 0 ? (
+              <EmptyState message="No notifications yet" icon={IconBell} />
+            ) : (
+              <div className="space-y-2">
+                {notifications.map(n => (
+                  <div
+                    key={n.id}
+                    onClick={() => handleRead(n)}
+                    className={`card cursor-pointer hover:bg-gray-50 transition-colors ${
+                      !n.isRead ? 'border-l-4 border-l-indigo-400' : 'opacity-75'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          {!n.isRead && <span className="w-1.5 h-1.5 bg-indigo-400 shrink-0" />}
+                          <p className="text-sm font-medium text-gray-900">{n.notification.title}</p>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">{n.notification.message}</p>
+                        <p className="text-xs text-gray-400 mt-1.5">{formatDateTime(n.createdAt)}</p>
+                      </div>
+                      {n.isRead && <IconCheckCircle size={15} className="text-emerald-500 shrink-0" strokeWidth={1.5} />}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </DashboardLayout>

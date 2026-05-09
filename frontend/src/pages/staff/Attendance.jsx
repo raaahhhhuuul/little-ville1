@@ -4,12 +4,12 @@ import LoadingSpinner from '../../components/common/LoadingSpinner'
 import EmptyState from '../../components/common/EmptyState'
 import { getClasses, markAttendance, getClassAttendance } from '../../api/staff'
 import toast from 'react-hot-toast'
-import { Save, Loader2 } from 'lucide-react'
+import { IconSave, IconSpinner, IconUsers } from '../../components/common/Icons'
 
-const STATUS_BTN = {
-  PRESENT: { active: 'bg-emerald-100 border-emerald-400 text-emerald-700 font-bold', label: 'P' },
-  ABSENT:  { active: 'bg-rose-100 border-rose-400 text-rose-700 font-bold',           label: 'A' },
-  LATE:    { active: 'bg-amber-100 border-amber-400 text-amber-700 font-bold',         label: 'L' }
+const STATUS_STYLES = {
+  PRESENT: { active: 'bg-emerald-50 border-emerald-400 text-emerald-700', label: 'P' },
+  ABSENT:  { active: 'bg-rose-50 border-rose-400 text-rose-700',          label: 'A' },
+  LATE:    { active: 'bg-amber-50 border-amber-400 text-amber-700',        label: 'L' }
 }
 
 const StaffAttendance = () => {
@@ -48,14 +48,16 @@ const StaffAttendance = () => {
     setSubmitting(true)
     try {
       await markAttendance({ classId: selectedClass, attendances: students.map(s => ({ studentId: s.id, date, status: attendance[s.id] || 'PRESENT' })) })
-      toast.success('Attendance saved! ✅')
+      toast.success('Attendance saved')
     } catch { toast.error('Failed to save attendance') }
     finally { setSubmitting(false) }
   }
 
-  const counts = { P: Object.values(attendance).filter(s => s === 'PRESENT').length, A: Object.values(attendance).filter(s => s === 'ABSENT').length, L: Object.values(attendance).filter(s => s === 'LATE').length }
-
-  if (loading) return <DashboardLayout title="Attendance"><LoadingSpinner fullScreen /></DashboardLayout>
+  const counts = {
+    P: Object.values(attendance).filter(s => s === 'PRESENT').length,
+    A: Object.values(attendance).filter(s => s === 'ABSENT').length,
+    L: Object.values(attendance).filter(s => s === 'LATE').length
+  }
 
   return (
     <DashboardLayout title="Mark Attendance">
@@ -75,37 +77,42 @@ const StaffAttendance = () => {
           </div>
         </div>
 
-        {loadingStudents ? (
-          <div className="flex justify-center py-10"><LoadingSpinner size="lg" /></div>
+        {loading ? (
+          <LoadingSpinner />
+        ) : loadingStudents ? (
+          <LoadingSpinner />
         ) : students.length === 0 ? (
-          <EmptyState message="No students enrolled in this class" emoji="👨‍🎓" />
+          <EmptyState message="No students enrolled in this class" icon={IconUsers} />
         ) : (
           <div className="card space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-violet-800">👨‍🎓 {students.length} Students</h3>
+              <span className="text-sm font-medium text-gray-700">{students.length} students</span>
               <div className="flex gap-2">
-                <span className="badge-green">✓ {counts.P} Present</span>
-                <span className="badge-red">✗ {counts.A} Absent</span>
-                <span className="badge-yellow">◷ {counts.L} Late</span>
+                <span className="badge-green">{counts.P} Present</span>
+                <span className="badge-red">{counts.A} Absent</span>
+                <span className="badge-yellow">{counts.L} Late</span>
               </div>
             </div>
 
-            <div className="divide-y-2 divide-orange-50">
+            <div className="divide-y divide-gray-100">
               {students.map(s => (
                 <div key={s.id} className="flex items-center justify-between py-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-gradient-to-br from-violet-400 to-purple-500 rounded-xl flex items-center justify-center text-xs font-bold text-white shadow-sm">
+                    <div className="w-8 h-8 bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-medium shrink-0">
                       {s.firstName[0]}{s.lastName[0]}
                     </div>
-                    <span className="text-sm font-bold text-gray-800">{s.firstName} {s.lastName}</span>
+                    <span className="text-sm text-gray-800">{s.firstName} {s.lastName}</span>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     {['PRESENT', 'ABSENT', 'LATE'].map(status => (
-                      <button key={status} onClick={() => setAttendance(p => ({ ...p, [s.id]: status }))}
-                        className={`w-9 h-9 rounded-xl text-xs border-2 transition-all font-bold ${
-                          attendance[s.id] === status ? STATUS_BTN[status].active : 'bg-white border-gray-200 text-gray-400 hover:border-orange-200'
-                        }`}>
-                        {STATUS_BTN[status].label}
+                      <button
+                        key={status}
+                        onClick={() => setAttendance(p => ({ ...p, [s.id]: status }))}
+                        className={`w-8 h-8 text-xs border transition-colors font-medium ${
+                          attendance[s.id] === status ? STATUS_STYLES[status].active : 'bg-white border-gray-200 text-gray-400 hover:border-gray-300'
+                        }`}
+                      >
+                        {STATUS_STYLES[status].label}
                       </button>
                     ))}
                   </div>
@@ -113,8 +120,8 @@ const StaffAttendance = () => {
               ))}
             </div>
 
-            <button onClick={handleSave} disabled={submitting} className="btn-primary w-full flex items-center justify-center gap-2 mt-2">
-              {submitting ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : <><Save size={16} /> Save Attendance</>}
+            <button onClick={handleSave} disabled={submitting} className="btn-violet w-full flex items-center justify-center gap-2">
+              {submitting ? <><IconSpinner size={15} /> Saving...</> : <><IconSave size={15} strokeWidth={1.5} /> Save Attendance</>}
             </button>
           </div>
         )}
